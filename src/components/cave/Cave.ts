@@ -1,7 +1,7 @@
 import type { ICave } from "./ICave";
 
 interface RoomData {
-    adjcent: number[]; // length == 6
+    adjacent: number[]; // length == 6
     connected: number[] // 0 < length <= 3 
 }
 
@@ -16,7 +16,7 @@ export class Cave implements ICave {
     private static CAVES_DIR: string = "./caves";
 
     // Array of the available cave files names
-    private static AVAILABLE_CAVE_FILES: string[] = [
+    private static AVAILABLE_CAVES_PATHS: string[] = [
         `${Cave.CAVES_DIR}/cave1.json`
         // TODO: Add available caves
     ];
@@ -28,7 +28,7 @@ export class Cave implements ICave {
         const cavePath = `${Cave.CAVES_DIR}/${caveName}.json`;
 
         try {
-            // Fetches the cave data from the available cave file
+            // Fetches the cave data from the available cave Json file
             const caveData = await $.getJSON(cavePath) as CaveData;
 
             this.roomCount = caveData.roomCount;
@@ -39,7 +39,7 @@ export class Cave implements ICave {
     }
 
     getAvailableCaves(): string[] {
-        return Cave.AVAILABLE_CAVE_FILES;
+        return Cave.AVAILABLE_CAVES_PATHS;
     }
 
     getRoomCount(): number {
@@ -54,7 +54,7 @@ export class Cave implements ICave {
 
     getAdjacentRooms(roomNumber: number): number[] {
         this.validateRoomNumber(roomNumber);
-        return this.rooms[roomNumber].adjcent;
+        return this.rooms[roomNumber].adjacent;
     }
 
     getConnectedRooms(roomNumber: number): number[] {

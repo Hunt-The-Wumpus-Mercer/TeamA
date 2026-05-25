@@ -1,6 +1,6 @@
 export interface ICave {
     // Using template interface
-    // BTW: Assuming that cave files are Json objects of the format: 
+    // BTW: Cave files are Json objects of the format: 
     /* 
     {
         "name": "Cave Name",
