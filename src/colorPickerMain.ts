@@ -1,4 +1,3 @@
-
 import $ from "jquery";
 import "./style.css";
 import { ColorPickerTileSize, type IColorPicker } from "./samples/colorPicker/IColorPicker";
