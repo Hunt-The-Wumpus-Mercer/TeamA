@@ -1,0 +1,10 @@
+[
+    { 
+  "id": 101,
+  "type": "MCQ OR FRQ HERE",
+  "prompt": "PLACE QUESTION HERE",
+  "options": ["ANSWER1", "ANSWER2", "ANSWER3", "ANSWER4"],
+  "answer": "CORRECTANSWER"
+    } 
+
+]
