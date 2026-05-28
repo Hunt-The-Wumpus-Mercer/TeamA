@@ -1,45 +1,31 @@
 import type { ICave } from "./ICave";
+import Caves from "./Caves.json";
 
 interface RoomData {
     adjacent: number[]; // length == 6
-    connected: number[] // 0 < length <= 3 
+    connected: number[] // 0 <= length <= 3
 }
 
 interface CaveData {
-    name: string;
     roomCount: number;
     rooms: Record<number, RoomData>;
 }
 
+const cavesData: Record<string, unknown> = Caves;
+
 export class Cave implements ICave {
-    // Placeholder for the caves directory
-    private static CAVES_DIR: string = "./caves";
-
-    // Array of the available cave files names
-    private static AVAILABLE_CAVES_PATHS: string[] = [
-        `${Cave.CAVES_DIR}/cave1.json`
-        // TODO: Add available caves
-    ];
-
     private rooms: Record<number, RoomData> = {};
-    private roomCount: number = 0;
+    private roomCount: number = -1;
 
     async loadCave(caveName: string): Promise<void> {
-        const cavePath = `${Cave.CAVES_DIR}/${caveName}.json`;
+        const caveData = cavesData[caveName] as CaveData;
 
-        try {
-            // Fetches the cave data from the available cave Json file
-            const caveData = await $.getJSON(cavePath) as CaveData;
-
-            this.roomCount = caveData.roomCount;
-            this.rooms = caveData.rooms;
-        } catch (error) {
-            throw new Error(`Failed to load cave from file path '${cavePath}'.`);
-        }
+        this.roomCount = caveData.roomCount;
+        this.rooms = caveData.rooms;
     }
 
     getAvailableCaves(): string[] {
-        return Cave.AVAILABLE_CAVES_PATHS;
+        return Object.keys(cavesData);
     }
 
     getRoomCount(): number {
@@ -61,4 +47,10 @@ export class Cave implements ICave {
         this.validateRoomNumber(roomNumber);
         return this.rooms[roomNumber].connected;
     }
+}
+
+export function test_cave_files(): void {
+    let cave: Cave = new Cave();
+    cave.loadCave("cave1");
+     
 }

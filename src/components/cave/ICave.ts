@@ -1,27 +1,6 @@
 export interface ICave {
     // Using template interface
-    // BTW: Cave files are Json objects of the format: 
-    /* 
-    {
-        "name": "Cave Name",
-        "roomCount": 3,
-        "rooms": {
-            "1": {
-              "adjacent": [0, 2, 3, 0, 0, 0],
-              "connected": [0, 2, 0, 0, 0, 0]
-            },
-            "2": {
-              "adjacent": [1, 0, 0, 0, 0, 0],
-              "connected": [1, 0, 0, 0, 0, 0]
-            },
-            "3": {
-              "adjacent": [1, 0, 0, 0, 0, 0],
-              "connected": [0, 0, 0, 0, 0, 0]
-            }
-        }
-    }
-    */  
-
+    
     /**
     * Loads cave data from one of the available cave files.
     * Rooms are numbered from 1..N.
