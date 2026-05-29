@@ -1,7 +1,7 @@
 export const PlayerResourceType = {
-    ARROWS: "arrows",
-    COINS: "coins",
-    TURNS: "turns",
+    ARROWS: 0,
+    COINS: 0,
+    TURNS: 0
 } as const;
 
 export type PlayerResourceType = (typeof PlayerResourceType)[keyof typeof PlayerResourceType];

@@ -1,13 +1,15 @@
 import type { ICave } from "/workspaces/TeamA/src/components/cave/ICave.ts";
-import { Map } from "./Map";
+import { Cave } from "/workspaces/TeamA/src/components/cave/Cave.ts";
 
 export class MapHelper
 {
+    const cave = new Cave();
     /**
     * Initializes the helper with cave and map dependencies,
     * including random map object placement.
      */
-    public static initialize(cave: ICave, map: Map): void {
+    public static initialize(cave: ICave): void {
+        cave.loadCave("cave1")
         return; // DO THIS CODE
     }
 
@@ -24,7 +26,11 @@ export class MapHelper
      * Returns warning messages for hazards in rooms adjacent to the player.
      * Warning messages are unique and may include multiple entries.
      */
-    getWarningsNearPlayer(): string[];
+    getWarningsNearPlayer(): string[] {
+        const warnings: string[] = [];
+        warnings.push("hi");
+        return warnings;
+    }
 
     /**
      * Moves the wumpus after a missed shot to a room up to two moves away.
