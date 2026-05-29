@@ -75,7 +75,7 @@ export class MapHelper
 
     /**
      * Returns warning messages for hazards in rooms adjacent to the player.
-     * Warning messages are unique and may include multiple entries.
+     * Warning messages are unique and random out of 3 possible.
      */
     getWarningsNearPlayer(): string[] {
         const hazards: string[] = []
