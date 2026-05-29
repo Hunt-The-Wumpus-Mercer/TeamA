@@ -1,9 +1,8 @@
 import type { ICave } from "/workspaces/TeamA/src/components/cave/ICave.ts";
-import { Cave } from "/workspaces/TeamA/src/components/cave/Cave.ts";
+import { RoomNum, type MapObjectType } from "./IMap";
 
 export class MapHelper
 {
-    const cave = new Cave();
     /**
     * Initializes the helper with cave and map dependencies,
     * including random map object placement.
@@ -19,7 +18,8 @@ export class MapHelper
      * If wumpus is present, it appears first in the result.
      */
     public static getHazardsInPlayerRoom(): string[] {
-        const wumpusRoom = Map.getRoomLocation("wumpus");
+        const wumpusRoom = Map.getRoomLocation("wumpus" as MapObjectType);
+        return [];
     }
 
     /**
