@@ -5,7 +5,6 @@ export interface Question {
     prompt: string;
     options?: string[]; //MCQ answer choices
     answer: string;
-    hint?: string;
 }
 export interface ITrivia {
   questions: Question[];
