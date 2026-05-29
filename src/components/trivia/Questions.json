@@ -124,9 +124,9 @@
   },
   {
     "id": 13,
-    "type": "MCQ",
+    "type": "FRQ",
     "prompt": "Consider the following code segment:\n\nint[] values = {3, 0, 7, 2, 8};\nint target = 4;\nint result = -1;\nfor (int i = 0; i < values.length; i++) {\n    if (values[i] > target) {\n        result = i;\n        break;\n    }\n}\nSystem.out.println(result);\n\nWhat is printed when the code segment is executed?",
-    "options": ["2", "4", "7", "-1"],
+    "options": [],
     "answer": "2"
   },
   {
@@ -186,9 +186,9 @@
   },
   {
     "id": 19,
-    "type": "MCQ",
+    "type": "FRQ",
     "prompt": "Consider the following code segment:\n\nArrayList<String> names = new ArrayList<>();\nnames.add(\"Alex\");\nnames.add(\"Ben\");\nnames.add(\"Charlie\");\nnames.remove(1);\nSystem.out.println(names.get(1));\n\nWhat is printed when the code segment is executed?",
-    "options": ["Alex", "Ben", "Charlie", "An IndexOutOfBoundsException is thrown"],
+    "options": [],
     "answer": "Charlie"
   },
   {
@@ -262,14 +262,9 @@
   },
   {
     "id": 27,
-    "type": "MCQ",
+    "type": "FRQ",
     "prompt": "Consider the following class hierarchy:\n\npublic class Appliance {}\npublic class Refrigerator extends Appliance {}\n\nGiven the declarations below, which line of code will compile successfully?\n\nAppliance a = new Appliance();\nRefrigerator r = new Refrigerator();",
-    "options": [
-      "Refrigerator x = new Appliance();",
-      "Appliance y = new Refrigerator();",
-      "Refrigerator z = a;",
-      "String s = (String) a;"
-    ],
+    "options": [],
     "answer": "Appliance y = new Refrigerator();"
   },
   {
@@ -299,6 +294,13 @@
     "prompt": "Consider the following code segment:\n\nint[] arr = {10, 20, 30};\nint val = arr[arr.length - 1];\nSystem.out.println(val);\n\nWhat value is printed when the code segment executes?",
     "options": ["10", "20", "30", "An IndexOutOfBoundsException is thrown"],
     "answer": "30"
+  },
+  {
+    "id": 32,
+    "type": "FRQ",
+    "prompt": "What is 7/2?",
+    "options": [],
+    "answer": "3"
   }
 
 ]

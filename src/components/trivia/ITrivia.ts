@@ -4,7 +4,8 @@ export interface Question {
     type: QuestionType;
     prompt: string;
     options?: string[]; //MCQ answer choices
-    answer: string; 
+    answer: string;
+    hint?: string;
 }
 export interface ITrivia {
   questions: Question[];
