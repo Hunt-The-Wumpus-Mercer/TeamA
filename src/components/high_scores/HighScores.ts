@@ -1,18 +1,15 @@
 import type { IHighScores, IPerformance } from "./IHighScores";
-import { Player } from "/workspaces/TeamA/src/components/player/Player.ts"
-import { PlayerResourceType } from "/workspaces/TeamA/src/components/player/IPlayer.ts";
 export class HighScore {
     // encryption key for JSON file
     KEY = '1a2b3c';
     MAX_SCORES = 10;
-    private player = new Player(); 
     //calculates score
     public calculateScore(perf: IPerformance): number {
         if (!perf.won) return 0;
 
         const baseScore = 100;
         const penalty = perf.moves;
-        const bonus = perf.arrowsLeft*10+this.player.getResource(PlayerResourceType.COINS);
+        const bonus = perf.arrowsLeft*10+perf.gold;
         return Math.max(0, baseScore - penalty + bonus);
     }
     // returns scores
@@ -33,6 +30,9 @@ export class HighScore {
         const Entry: IHighScores = {
             playerName: playerName || 'User',
             score: score,
+            moves: perf.moves,
+            arrowsLeft: perf.arrowsLeft,
+            gold: perf.gold
         }
         const currentScores = this.getScores();
         currentScores.push(Entry);
