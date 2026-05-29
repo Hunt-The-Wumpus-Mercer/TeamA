@@ -6,7 +6,7 @@ export interface ICave {
     * Rooms are numbered from 1..N.
     * A value of 0 means there is no adjacent room/connection for that side.
      */
-    loadCave(caveName: string): Promise<void>;
+    loadCave(caveName: string): void;
 
     /**
      * Returns the list of cave file paths that can be loaded.

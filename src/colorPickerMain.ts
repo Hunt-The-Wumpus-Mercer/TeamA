@@ -37,5 +37,6 @@ $colorPickerButton.on('click', async () => {
 	$colorPickerButton.show();
 });
 
+// Testing
 let s = new SoundManager();
 s.playSound(SoundEventType.SHOOT_ARROW);

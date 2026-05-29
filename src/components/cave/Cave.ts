@@ -17,7 +17,7 @@ export class Cave implements ICave {
     private rooms: Record<number, RoomData> = {};
     private roomCount: number = -1;
 
-    async loadCave(caveName: string): Promise<void> {
+    loadCave(caveName: string): void {
         const caveData = cavesData[caveName] as CaveData;
 
         this.roomCount = caveData.roomCount;
