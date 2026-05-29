@@ -1,4 +1,11 @@
+import $ from "jquery";
+import "./style.css";
+import { runHexagonDemo } from './components/DisplayImage/ImageLoader';
 
+runHexagonDemo();
+/*
+// Execute the renderer sequence mapping out the visual grid canvas coordinate canvas
+runGridDemo();
 import $ from "jquery";
 import "./style.css";
 import { GameControl } from "./components/game_control/GameControl";
@@ -13,4 +20,4 @@ $app.html(`
 
 const gameControl = new GameControl();
 
-void gameControl.init("#WumpusGameContainer");
+void gameControl.init("#WumpusGameContainer");*/
