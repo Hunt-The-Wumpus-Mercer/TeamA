@@ -3,6 +3,8 @@ import $ from "jquery";
 import "./style.css";
 import { ColorPickerTileSize, type IColorPicker } from "./samples/colorPicker/IColorPicker";
 import { ColorPicker } from "./samples/colorPicker/ColorPicker";
+import SoundManager from "./components/sound/SoundManager";
+import { SoundEventType } from "./components/sound/ISoundManager";
 
 const $app = $("#app");
 $app.html(`
@@ -34,3 +36,6 @@ $colorPickerButton.on('click', async () => {
 	$selectedColorText.text(newSelectedColor);
 	$colorPickerButton.show();
 });
+
+let s = new SoundManager();
+s.playSound(SoundEventType.SHOOT_ARROW);
