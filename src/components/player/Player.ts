@@ -1,4 +1,4 @@
-import type { PlayerResourceType } from "./IPlayer";
+import { PlayerResources } from "./IPlayer";
 
 export class Player {
     private playerName: string = "";
@@ -18,22 +18,29 @@ export class Player {
     }
 
     /** Returns the current value of the requested resource. */
-    getResource(resource: PlayerResourceType): number {
-        const value = localStorage.getItem(resource);
-        return value ? parseInt(value) : 0;
+    getResource(resource: string): number {
+        const value = PlayerResources.get(resource);
+        return value !== undefined ? value : 0;
+    }
+
+    /** Sets the requested resource to the given value. */
+    setResource(resource: string, amount: number): void {
+        PlayerResources.set(resource, amount);
+        return;
     }
 
     /** Increments the requested resource and returns the resulting value. */
-    incrementResource(resource: PlayerResourceType, amount?: number): number {
-        const current = this.getResource(resource);
-        localStorage.setItem(resource, (current + (amount || 1)).toString());
-        return this.getResource(resource);
+    incrementResource(resource: string, amount?: number): number {
+        const nextValue = this.getResource(resource) + (amount || 1);
+        PlayerResources.set(resource, nextValue);
+        return nextValue;
     }
 
     /** Decrements the requested resource and returns the resulting value. */
-    decrementResource(resource: PlayerResourceType, amount?: number): number {
-        this.incrementResource(resource, -(amount || 1));
-        return this.getResource(resource);
+    decrementResource(resource: string, amount?: number): number {
+        const nextValue = this.getResource(resource) - (amount || 1);
+        PlayerResources.set(resource, nextValue);
+        return nextValue;
     }
 
     /**
