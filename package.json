@@ -17,6 +17,7 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
+    "canvas": "^3.2.3",
     "jquery": "^4.0.0"
   }
 }

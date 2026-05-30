@@ -1,6 +1,6 @@
 import $ from "jquery";
 import "./style.css";
-import { runHexagonDemo } from './components/DisplayImage/ImageLoader';
+import { runHexagonDemo } from './components/displayImage/ImageLoader';
 
 runHexagonDemo();
 /*

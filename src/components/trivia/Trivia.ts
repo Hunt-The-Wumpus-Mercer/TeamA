@@ -44,4 +44,42 @@ export class Trivia implements ITrivia {
     
         return userAnswer.trim().toLowerCase() === question.answer.trim().toLowerCase();
     }
+
+   //allows for easier use of some functions later on
+    public async runTriviaChallenge(
+        numQuestions: number,
+        requiredCorrect: number,
+        promptFn?: (q: Question) => Promise<string>
+    ): Promise<boolean> {
+        if (!promptFn) throw new Error("promptFn is required to ask questions");
+
+        let correct = 0;
+        for (let i = 0; i < numQuestions; i++) {
+            const q = this.getNextQuestion();
+            const userAnswer = await promptFn(q);
+            if (this.validateAnswer(q.id, userAnswer)) correct++;
+        }
+
+        return correct >= requiredCorrect;
+    }
+
+    // Purchasing additional arrows: 2 out of 3 correct
+    public purchaseArrows(promptFn?: (q: Question) => Promise<string>): Promise<boolean> {
+        return this.runTriviaChallenge(3, 2, promptFn);
+    }
+
+    // Purchasing a secret: 2 out of 3 correct
+    public purchaseSecret(promptFn?: (q: Question) => Promise<string>): Promise<boolean> {
+        return this.runTriviaChallenge(3, 2, promptFn);
+    }
+
+    // Saving from a bottomless pit: 2 out of 3 correct
+    public saveFromPit(promptFn?: (q: Question) => Promise<string>): Promise<boolean> {
+        return this.runTriviaChallenge(3, 2, promptFn);
+    }
+
+    // Escaping the Wumpus: 3 out of 5 correct
+    public escapeWumpus(promptFn?: (q: Question) => Promise<string>): Promise<boolean> {
+        return this.runTriviaChallenge(5, 3, promptFn);
+    }
 }

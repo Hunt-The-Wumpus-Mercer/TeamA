@@ -39,6 +39,9 @@ By default, the project runs the ColorPicker sample. To run the Wumpus game inst
 
 Sample interfaces for the Wumpus project are provided in the `src/samples/wumpus_interfaces` folder. If you need a starting point or get stuck, it's perfectly fine to copy these interfaces into your own project files to save time or help you move forward.  You are not required to use anything from the `wumpus_interfaces` folder; you are welcome to ignore or change the interfaces as you desire.
 
+## Dependencies:
+### Canvas
+
 ## Team Roles
 Romi Shalom: Cave  
 Charlie Denman: Map, and Player  
