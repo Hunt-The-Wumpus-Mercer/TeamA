@@ -3,6 +3,7 @@ import { HighScore } from "../high_scores/HighScores";
 import { HighScoreGraphics } from "../high_scores/HighScoreGraphics";
 import type { IPerformance } from "../high_scores/IHighScores";
 import { Map } from "../map/Map";
+import { MapObjectType } from "../map/IMap";
 import { Player } from "../player/Player";
 import type { CaveRoomDirections } from "../shared/CaveRoomDirections";
 import { TriviaGraphics } from "../trivia/TriviaGraphics";
@@ -19,6 +20,7 @@ export class GameControl implements IGameControl {
     private highScores: HighScoreGraphics = new HighScoreGraphics();
     private trivia: TriviaGraphics = new TriviaGraphics();
     private terminal: Terminal = new Terminal();
+    private startRoom: any;
 
     init(containerSelector: string): void {
         const $root = $(containerSelector);
@@ -30,7 +32,25 @@ export class GameControl implements IGameControl {
         this.highScores.init($highScoreContainer);
     }
 
-    
+
+    public startGame(): void {
+        this.player.incrementResource("arrows", 2);
+        const total = this.cave.getRoomCount();
+        const used = new Set<number>();
+        const random = () => {
+            let rand: number;
+            do { rand = Math.floor(Math.random() * total) + 1; } while (used.has(rand));
+            used.add(rand);
+            return rand;
+        };
+        this.startRoom = random();
+        Map.setRoomLocation(MapObjectType.player, this.startRoom);
+        Map.setRoomLocation(MapObjectType.wumpus, random());
+        Map.setRoomLocation(MapObjectType.bat1, random());
+        Map.setRoomLocation(MapObjectType.bat2, random());
+        Map.setRoomLocation(MapObjectType.pit1, random());
+        Map.setRoomLocation(MapObjectType.pit2, random());
+    }
 
     movePlayer(caveRoomDirection: CaveRoomDirections): void {
         this.terminal.println(`Player moved ${caveRoomDirection}`);
