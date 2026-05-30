@@ -1,5 +1,5 @@
-import "../shared/UIStyleHadrian.css";
-import type { Question } from './ITrivia';
+import { Trivia } from './Trivia';
+import type { EventType, Question } from './ITrivia';
 
 type OptionRect = { text: string; x: number; y: number; w: number; h: number };
 
@@ -7,6 +7,9 @@ export class TriviaGraphics {
 	private $container!: JQuery;
 	private canvas!: HTMLCanvasElement;
 	private ctx!: CanvasRenderingContext2D;
+	private titleNode!: HTMLHeadingElement;
+	private copyNode!: HTMLParagraphElement;
+	private trivia: Trivia = new Trivia();
 	private activeResolve?: (value: string) => void;
 	private activeReject?: (reason?: any) => void;
 	private optionsRects: OptionRect[] = [];
@@ -47,6 +50,8 @@ export class TriviaGraphics {
 		const copy = document.createElement('p');
 		copy.className = 'ui-copy';
 		copy.textContent = 'Answer fast before the timer runs out';
+		this.titleNode = title;
+		this.copyNode = copy;
 		headerCopy.append(kicker, title, copy);
 		header.append(headerCopy);
 
@@ -89,6 +94,23 @@ export class TriviaGraphics {
 		});
 	}
 
+	public async showQuestions(eventType: EventType): Promise<boolean> {
+		this.setChallengeCopy(eventType);
+
+		switch (eventType) {
+			case 'PIT':
+				return this.trivia.saveFromPit((question) => this.showQuestion(question));
+			case 'SECRET':
+				return this.trivia.purchaseSecret((question) => this.showQuestion(question));
+			case 'WUMPUS':
+				return this.trivia.escapeWumpus((question) => this.showQuestion(question));
+			case 'ARROWS':
+				return this.trivia.purchaseArrows((question) => this.showQuestion(question));
+			default:
+				return false;
+		}
+	}
+
 	public cancelActive(): void {
 		if (this.activeReject) this.activeReject(new Error('Cancelled'));
 		this.cleanup();
@@ -103,6 +125,29 @@ export class TriviaGraphics {
 		this.inputText = '';
 		this.currentQuestion = undefined;
 		this.clearCanvas();
+	}
+
+	private setChallengeCopy(eventType: EventType): void {
+		if (!this.titleNode || !this.copyNode) return;
+
+		switch (eventType) {
+			case 'PIT':
+				this.titleNode.textContent = 'Pit Escape';
+				this.copyNode.textContent = 'Answer trivia to climb back out.';
+				return;
+			case 'SECRET':
+				this.titleNode.textContent = 'Secret Purchase';
+				this.copyNode.textContent = 'Answer trivia to unlock the secret.';
+				return;
+			case 'WUMPUS':
+				this.titleNode.textContent = 'Wumpus Finale';
+				this.copyNode.textContent = 'Answer trivia to survive the encounter.';
+				return;
+			case 'ARROWS':
+				this.titleNode.textContent = 'Arrow Purchase';
+				this.copyNode.textContent = 'Answer trivia to restock arrows.';
+				return;
+		}
 	}
 
 	private onCanvasClick(e: MouseEvent): void {

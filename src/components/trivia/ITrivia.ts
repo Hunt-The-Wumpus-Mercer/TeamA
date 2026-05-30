@@ -1,4 +1,4 @@
-export type QuestionType = "MCQ" | "FRQ"
+export type QuestionType = "MCQ" | "FRQ";
 export interface Question {
     id: number;
     type: QuestionType;
@@ -11,4 +11,4 @@ export interface ITrivia {
   getNextQuestion(): Question;
   validateAnswer(questionId: number, userAnswer: string): boolean;
 }
-export type EventType = { PIT: "PIT", SECRET: "SECRET", WUMPUS: "WUMPUS", ARROWS: "ARROWS" };
+export type EventType = "PIT" | "SECRET" | "WUMPUS" | "ARROWS";
