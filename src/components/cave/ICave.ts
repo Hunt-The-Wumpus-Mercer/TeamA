@@ -23,10 +23,4 @@ export interface ICave {
      * Each value is a room number in the range 1..N, or 0 when no adjacent room exists.
      */
     getAdjacentRooms(roomNumber: number): number[];
-
-    /**
-     * Returns six connected room entries for the given room,
-     * using 0 where no doorway connection exists.
-     */
-    getConnectedRooms(roomNumber: number): number[];
 }

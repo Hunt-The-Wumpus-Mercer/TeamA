@@ -42,11 +42,6 @@ export class Cave implements ICave {
         this.validateRoomNumber(roomNumber);
         return this.rooms[roomNumber].adjacent;
     }
-
-    getConnectedRooms(roomNumber: number): number[] {
-        this.validateRoomNumber(roomNumber);
-        return this.rooms[roomNumber].connected;
-    }
 }
 
 export function test_cave_files(): void {
