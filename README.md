@@ -46,6 +46,5 @@ Sample interfaces for the Wumpus project are provided in the `src/samples/wumpus
 Romi Shalom: Cave  
 Charlie Denman: Map, and Player  
 James Jungemann: Graphics  
-Hadrian Drumright: Trivia, and Highscores  
-Ruixan Du: Game Control  
+Hadrian Drumright-Frost: Trivia, Highscores, Terminal, and GameControls    
 Maryam Gengler: Sound  

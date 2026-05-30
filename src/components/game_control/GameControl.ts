@@ -8,6 +8,7 @@ import type { CaveRoomDirections } from "../shared/CaveRoomDirections";
 import { TriviaGraphics } from "../trivia/TriviaGraphics";
 import type { EventType } from "../trivia/ITrivia";
 import type { IGameControl } from "./IGameControl";
+import { Terminal } from "../Terminal";
 import $ from "jquery";
 
 export class GameControl implements IGameControl {
@@ -17,6 +18,7 @@ export class GameControl implements IGameControl {
     private highScoreData: HighScore = new HighScore();
     private highScores: HighScoreGraphics = new HighScoreGraphics();
     private trivia: TriviaGraphics = new TriviaGraphics();
+    private terminal: Terminal = new Terminal();
 
     init(containerSelector: string): void {
         const $root = $(containerSelector);
@@ -31,6 +33,7 @@ export class GameControl implements IGameControl {
     
 
     movePlayer(caveRoomDirection: CaveRoomDirections): void {
+        this.terminal.println(`Player moved ${caveRoomDirection}`);
         this.map.movePlayer(caveRoomDirection);
     }
 
@@ -40,27 +43,31 @@ export class GameControl implements IGameControl {
         }
         else if (this.map.fireArrow(caveRoomDirection) === true) {
             this.player.setWumpusKilled();
+            this.terminal.println("You hit the wumpus!");
             return "You hit the wumpus!";
         }
         else {
+            this.terminal.println("You missed!");
             return "You missed!";
         }
     }
 
     async purchaseArrow(): Promise<string> {
-        return this.runTriviaEvent("ARROWS", "You bought arrows.", "Not enough correct answers to buy arrows.");
+        this.player.incrementResource("arrows");
+        return this.runTriviaEvent("ARROWS", 'You bought arrows.', 'Not enough correct answers to buy arrows.');
     }
 
     async purchaseSecret(): Promise<string> {
-        return this.runTriviaEvent("SECRET", "You bought a secret", "You failed to buy a secret");
+        return this.runTriviaEvent("SECRET", this.map.wumpusDirection(), 'You failed to buy a secret.');
     }
 
     async saveFromPit(): Promise<string> {
-        return this.runTriviaEvent("PIT", "You escaped the pit!", "You fell into the pit and died");
+        this.terminal.println("You escaped the pit!");
+        return this.runTriviaEvent("PIT", 'You escaped the pit!', 'You fell into the pit and died');
     }
 
     async escapeWumpus(): Promise<string> {
-        return this.runTriviaEvent("WUMPUS", "You escaped the Wumpus!", "You died by wumpus");
+        return this.runTriviaEvent("WUMPUS", 'You escaped the Wumpus!','You died by wumpus');
     }
 
     async addHighScore(): Promise<void> {
@@ -80,10 +87,16 @@ export class GameControl implements IGameControl {
         return Promise.resolve("HighScores");
     }
 
-    private async runTriviaEvent(eventType: EventType, successMessage: string, failureMessage: string): Promise<string> {
+    private async runTriviaEvent(eventType: EventType, successMessage: string | (() => string) | null | CaveRoomDirections, failureMessage: string | (() => string)): Promise<string> {
         this.player.decrementResource("coins");
+        if (successMessage === null) {
+            return 'NULL ERROR';
+        }
         const passed = await this.trivia.showQuestions(eventType);
-        return passed ? successMessage : failureMessage;
+        const message = passed ? successMessage : failureMessage;
+        const output = typeof message === "function" ? message() : message;
+        this.terminal.println(output);
+        return output;
     }
 
 }

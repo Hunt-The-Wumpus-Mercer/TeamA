@@ -67,8 +67,6 @@ export class Map
             CaveRoomDirections.SOUTH_WEST,
             CaveRoomDirections.NORTH_WEST
         ];
-        
-        this.player.decrementResource("arrows");
 
         const playerRoom: number = Map.getRoomLocation("player");
         const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
