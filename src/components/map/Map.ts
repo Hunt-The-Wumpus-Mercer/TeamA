@@ -129,6 +129,71 @@ export class Map
         return hazards;
     }
 
+    /**
+     * Returns the direction from the player to the nearest wumpus.
+     * If the wumpus is in the same room or unreachable, returns null.
+     */
+    public wumpusDirection(): CaveRoomDirections | null {
+        const directionsOrder = [
+            CaveRoomDirections.NORTH,
+            CaveRoomDirections.NORTH_EAST,
+            CaveRoomDirections.SOUTH_EAST,
+            CaveRoomDirections.SOUTH,
+            CaveRoomDirections.SOUTH_WEST,
+            CaveRoomDirections.NORTH_WEST
+        ];
+
+        const playerRoom: number = Map.getRoomLocation("player");
+        const wumpusRoom: number = Map.getRoomLocation("wumpus");
+
+        if (playerRoom === wumpusRoom || playerRoom <= 0 || wumpusRoom <= 0) {
+            return null;
+        }
+
+        const queue: number[] = [playerRoom];
+        const visited: Set<number> = new Set([playerRoom]);
+        const predecessorMap: globalThis.Map<number, number> = new globalThis.Map();
+
+        while (queue.length > 0) {
+            const currentRoom = queue.shift() as number;
+            if (currentRoom === wumpusRoom) {
+                break;
+            }
+
+            const adjacentRooms: number[] = this.cave.getAdjacentRooms(currentRoom);
+            for (const adjacentRoom of adjacentRooms) {
+                if (adjacentRoom <= 0 || visited.has(adjacentRoom)) {
+                    continue;
+                }
+                visited.add(adjacentRoom);
+                predecessorMap.set(adjacentRoom, currentRoom);
+                queue.push(adjacentRoom);
+            }
+        }
+
+        if (!visited.has(wumpusRoom)) {
+            return null;
+        }
+
+        let nextRoom = wumpusRoom;
+        while (predecessorMap.get(nextRoom) !== playerRoom) {
+            const previousRoom = predecessorMap.get(nextRoom);
+            if (previousRoom === undefined) {
+                return null;
+            }
+            nextRoom = previousRoom;
+        }
+
+        const playerAdjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
+        const directionIndex = playerAdjacentRooms.indexOf(nextRoom);
+        if (directionIndex === -1) {
+            return null;
+        }
+
+        return directionsOrder[directionIndex];
+    }
+
+
      /**
      * Returns the room location for the requested map object.
      */
@@ -230,4 +295,6 @@ export class Map
 
         return Map.getRoomLocation("wumpus");
     }
+
+    
 }
