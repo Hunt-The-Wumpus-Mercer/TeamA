@@ -52,6 +52,28 @@ export class Map
         return;
     }
 
+    movePlayer(direction: string): number {
+        const directionsOrder = [
+            CaveRoomDirections.NORTH,
+            CaveRoomDirections.NORTH_EAST,
+            CaveRoomDirections.SOUTH_EAST,
+            CaveRoomDirections.SOUTH,
+            CaveRoomDirections.SOUTH_WEST,
+            CaveRoomDirections.NORTH_WEST
+        ];
+        
+        this.player.decrementResource("arrows");
+
+        const playerRoom: number = Map.getRoomLocation("player");
+        const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
+        const dirIndex: number = directionsOrder.indexOf(direction);
+        if (dirIndex === -1) throw new Error(`Invalid cave direction '${direction}'`);
+        else {
+            Map.setRoomLocation("player", adjacentRooms[dirIndex]);
+            return adjacentRooms[dirIndex];
+        }
+    }
+
     /**
      * Returns hazards in the player's current room.
      * Hazard names are "wumpus", "bat", and "pit".
@@ -156,7 +178,7 @@ export class Map
      * Automatically moves wumpus if the player misses.
      * Returns -1 if fired out of bounds, otherwise the room fired into.
      */
-    fireArrow(direction: string): number {
+    fireArrow(direction: string): boolean | number {
         const directionsOrder = [
             CaveRoomDirections.NORTH,
             CaveRoomDirections.NORTH_EAST,
@@ -179,11 +201,11 @@ export class Map
         const wumpusRoom: number = Map.getRoomLocation("wumpus");
         if (targetRoom === wumpusRoom) {
             this.wumpusState = "dead"
+            return true;
+        } else {
+            this.moveWumpusAfterMiss();
             return targetRoom;
         }
-
-        this.moveWumpusAfterMiss();
-        return targetRoom;
     }
 
     /**

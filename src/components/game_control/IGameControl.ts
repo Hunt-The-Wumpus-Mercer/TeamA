@@ -10,7 +10,7 @@ export interface IGameControl {
     /**
      * Attempts to move the player one room in the specified direction.
      */
-    movePlayer(caveRoomDirection: CaveRoomDirections): string;
+    movePlayer(caveRoomDirection: CaveRoomDirections): void;
 
     /**
      * Shoots an arrow through the selected doorway direction.

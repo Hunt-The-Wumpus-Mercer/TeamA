@@ -26,17 +26,25 @@ export class GameControl implements IGameControl {
         $root.append($triviaContainer, $highScoreContainer);
         this.trivia.init($triviaContainer);
         this.highScores.init($highScoreContainer);
-        Map.initialize(this.cave);
     }
 
     
 
-    movePlayer(caveRoomDirection: CaveRoomDirections): string {
-        throw new Error("Method not implemented.");
+    movePlayer(caveRoomDirection: CaveRoomDirections): void {
+        this.map.movePlayer(caveRoomDirection);
     }
 
     shootArrow(caveRoomDirection: CaveRoomDirections): string {
-        throw new Error("Method not implemented.");
+        if (this.map.fireArrow(caveRoomDirection) === -1) {
+            return "";
+        }
+        else if (this.map.fireArrow(caveRoomDirection) === true) {
+            this.player.setWumpusKilled();
+            return "You hit the wumpus!";
+        }
+        else {
+            return "You missed!";
+        }
     }
 
     async purchaseArrow(): Promise<string> {
