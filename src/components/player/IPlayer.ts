@@ -6,6 +6,7 @@ export const PlayerResourceType = {
 
 export type PlayerResourceType = (typeof PlayerResourceType)[keyof typeof PlayerResourceType];
 
+<<<<<<< HEAD
 export interface IPlayer {
     /**
      * Returns the player's name.
@@ -31,3 +32,10 @@ export interface IPlayer {
      */
     setWumpusKilled(): void;
 }
+=======
+export const PlayerResources = new Map<string, number>([
+    ['arrows', 0],
+    ['coins', 0],
+    ['turns', 0]
+]);
+>>>>>>> c80b2b5 (Added Graphics)

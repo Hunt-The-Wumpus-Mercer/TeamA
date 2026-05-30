@@ -11,3 +11,4 @@ export interface ITrivia {
   getNextQuestion(): Question;
   validateAnswer(questionId: number, userAnswer: string): boolean;
 }
+export type EventType = { PIT: "PIT", SECRET: "SECRET", WUMPUS: "WUMPUS", ARROWS: "ARROWS" };

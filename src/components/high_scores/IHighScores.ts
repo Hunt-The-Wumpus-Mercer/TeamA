@@ -1,5 +1,6 @@
 export interface IHighScores {
     playerName: string;
+    caveName?: string;
     score: number;
     moves: number;
     arrowsLeft: number;
