@@ -60,13 +60,13 @@ export class Map
     public getHazardsInPlayerRoom(): string[] {
         const hazards: string[] = []
         const hazardRoomNums: number[] = [
-            Map.getRoomLocation("wumpus" ),
-            Map.getRoomLocation("bat1" ),
-            Map.getRoomLocation("bat2" ),
-            Map.getRoomLocation("pit1" ),
-            Map.getRoomLocation("pit2" )
+            Map.getRoomLocation("wumpus"),
+            Map.getRoomLocation("bat1"),
+            Map.getRoomLocation("bat2"),
+            Map.getRoomLocation("pit1"),
+            Map.getRoomLocation("pit2")
         ];
-        const playerRoom: number =  Map.getRoomLocation("player" )
+        const playerRoom: number =  Map.getRoomLocation("player")
         for (let i = 0; i < hazardRoomNums.length; i++) {
             if (playerRoom == hazardRoomNums[i]) {
                 switch(hazardNames[i]) {
@@ -89,14 +89,14 @@ export class Map
     getWarningsNearPlayer(): string[] {
         const hazards: string[] = []
         const hazardRoomNums: number[] = [
-            Map.getRoomLocation("wumpus" ),
-            Map.getRoomLocation("bat1" ),
-            Map.getRoomLocation("bat2" ),
-            Map.getRoomLocation("pit1" ),
-            Map.getRoomLocation("pit2" )
+            Map.getRoomLocation("wumpus"),
+            Map.getRoomLocation("bat1"),
+            Map.getRoomLocation("bat2"),
+            Map.getRoomLocation("pit1"),
+            Map.getRoomLocation("pit2")
         ];
         
-        const playerRoom: number =  Map.getRoomLocation("player" )
+        const playerRoom: number =  Map.getRoomLocation("player")
         for (let i = 0; i < hazardRoomNums.length; i++) {
             const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
             // if any adjacent room contains this hazard, add its warning
