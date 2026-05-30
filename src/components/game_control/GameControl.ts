@@ -26,6 +26,7 @@ export class GameControl implements IGameControl {
         $root.append($triviaContainer, $highScoreContainer);
         this.trivia.init($triviaContainer);
         this.highScores.init($highScoreContainer);
+        Map.initialize(this.cave);
     }
 
     
