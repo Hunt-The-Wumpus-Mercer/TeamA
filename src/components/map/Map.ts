@@ -2,7 +2,7 @@ import { Cave } from "../cave/Cave";
 import type { ICave } from "../cave/ICave";
 import { type MapObjectType, objectRoomNums } from "./IMap";
 import { CaveRoomDirections } from "../shared/CaveRoomDirections";
-import { PlayerResources } from "../player/IPlayer";
+import { Player } from "../player/Player";
 
 
 const hazardNames: string[] = [
@@ -34,9 +34,13 @@ const pitWarnings: string[] = [
 export class Map
 {
     public cave: ICave;
+    public player: Player;
+    public wumpusState: string;
 
-    constructor(cave: Cave) {
+    constructor(cave: Cave, player: Player) {
         this.cave = cave;
+        this.player = player;
+        this.wumpusState = "sleeping";
     }
     
     /**
@@ -147,18 +151,22 @@ export class Map
         return 0;
     }
 
-
-    fireArrow(direction: CaveRoomDirections): number {
+    /**
+     * Simulates firing an arrow in the given direction. (e.g. "north_east")
+     * Automatically moves wumpus if the player misses.
+     * Returns -1 if fired out of bounds, otherwise the room fired into.
+     */
+    fireArrow(direction: string): number {
         const directionsOrder = [
             CaveRoomDirections.NORTH,
-            CaveRoomDirections.NORTHEAST,
-            CaveRoomDirections.SOUTHEAST,
+            CaveRoomDirections.NORTH_EAST,
+            CaveRoomDirections.SOUTH_EAST,
             CaveRoomDirections.SOUTH,
-            CaveRoomDirections.SOUTHWEST,
-            CaveRoomDirections.NORTHWEST
+            CaveRoomDirections.SOUTH_WEST,
+            CaveRoomDirections.NORTH_WEST
         ];
-
-
+        
+        this.player.decrementResource("arrows");
 
         const playerRoom: number = this.getRoomLocation("player" as MapObjectType);
         const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
@@ -170,11 +178,34 @@ export class Map
 
         const wumpusRoom: number = this.getRoomLocation("wumpus" as MapObjectType);
         if (targetRoom === wumpusRoom) {
-            this.setRoomLocation("wumpus", -1);
+            this.wumpusState = "dead"
             return targetRoom;
         }
 
         this.moveWumpusAfterMiss();
         return targetRoom;
+    }
+
+    /**
+     * Simulates the wumpus. 
+     * Returns and sets the room of the wumpus to
+     * -1 if the wumpus is dead.
+     * If the wumpus is sleeping, it wont move.
+     * Awakens the wumpus if the player is adjacent.
+     * Returns the room the wumpus ended up in.
+     */
+    simWumpus(): number {
+        // move the wumpus if awake
+        const adjacentRooms: number[] = this.cave.getAdjacentRooms(this.getRoomLocation("wumpus"));
+        if (this.wumpusState == "awake") {
+            this.setRoomLocation("wumpus", adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)]);
+        }
+        else if (this.wumpusState == "sleeping") {
+            if (adjacentRooms.includes(this.getRoomLocation("player")))
+                this.wumpusState = "awake";
+        }
+        else this.setRoomLocation("wumpus", -1);
+
+        return this.getRoomLocation("wumpus");
     }
 }
