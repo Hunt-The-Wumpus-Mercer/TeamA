@@ -25,6 +25,7 @@ export class HighScoreGraphics {
     private isEntryOpen = false;
     private onSubmit?: SubmitHandler;
     private onClose?: () => void;
+    nameSlots: any;
 
     public init($container: JQuery<HTMLElement>): void {
         this.$container = $container;

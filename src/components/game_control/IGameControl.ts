@@ -1,5 +1,4 @@
 import type { CaveRoomDirections } from "../shared/CaveRoomDirections";
-import type { TriviaChallengeResult } from "./ITriviaGraphics";
 
 export interface IGameControl {
 
@@ -11,7 +10,6 @@ export interface IGameControl {
     /**
      * Runs a trivia challenge and returns the challenge outcome.
      */
-    runTriviaChallenge(questionCount: number, requiredCorrectAnswers: number): TriviaChallengeResult;
 
     /**
      * Attempts to move the player one room in the specified direction.

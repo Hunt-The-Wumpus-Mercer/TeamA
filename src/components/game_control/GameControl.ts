@@ -17,25 +17,10 @@ export class GameControl implements IGameControl {
         // TODO: load ui
     }
 
-    runTriviaChallenge(questionCount: number, requiredCorrectAnswers: number) {
-        let correctAnswers = 0;
-        for (let i = 0; i < questionCount; i++) {
-            this.trivia.resetQueue();
-            let q = this.trivia.getNextQuestion();
-            // TODO: display quesion
-            // TODO: get user input and store in user answer
-            let userAnswer: string = "";
 
-            if (this.trivia.validateAnswer(i, userAnswer)) {
-                correctAnswers++;
-            }
-        }
-
-        if ()
-    }
 
     movePlayer(caveRoomDirection: CaveRoomDirections): string {
-        
+        throw new Error("Method not implemented.");
     }
 
     shootArrow(caveRoomDirection: CaveRoomDirections): string {
