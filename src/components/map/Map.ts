@@ -60,13 +60,13 @@ export class Map
     public getHazardsInPlayerRoom(): string[] {
         const hazards: string[] = []
         const hazardRoomNums: number[] = [
-            this.getRoomLocation("wumpus" as MapObjectType),
-            this.getRoomLocation("bat1" as MapObjectType),
-            this.getRoomLocation("bat2" as MapObjectType),
-            this.getRoomLocation("pit1" as MapObjectType),
-            this.getRoomLocation("pit2" as MapObjectType)
+            Map.getRoomLocation("wumpus" ),
+            Map.getRoomLocation("bat1" ),
+            Map.getRoomLocation("bat2" ),
+            Map.getRoomLocation("pit1" ),
+            Map.getRoomLocation("pit2" )
         ];
-        const playerRoom: number =  this.getRoomLocation("player" as MapObjectType)
+        const playerRoom: number =  Map.getRoomLocation("player" )
         for (let i = 0; i < hazardRoomNums.length; i++) {
             if (playerRoom == hazardRoomNums[i]) {
                 switch(hazardNames[i]) {
@@ -89,14 +89,14 @@ export class Map
     getWarningsNearPlayer(): string[] {
         const hazards: string[] = []
         const hazardRoomNums: number[] = [
-            this.getRoomLocation("wumpus" as MapObjectType),
-            this.getRoomLocation("bat1" as MapObjectType),
-            this.getRoomLocation("bat2" as MapObjectType),
-            this.getRoomLocation("pit1" as MapObjectType),
-            this.getRoomLocation("pit2" as MapObjectType)
+            Map.getRoomLocation("wumpus" ),
+            Map.getRoomLocation("bat1" ),
+            Map.getRoomLocation("bat2" ),
+            Map.getRoomLocation("pit1" ),
+            Map.getRoomLocation("pit2" )
         ];
         
-        const playerRoom: number =  this.getRoomLocation("player" as MapObjectType)
+        const playerRoom: number =  Map.getRoomLocation("player" )
         for (let i = 0; i < hazardRoomNums.length; i++) {
             const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
             // if any adjacent room contains this hazard, add its warning
@@ -110,14 +110,14 @@ export class Map
      /**
      * Returns the room location for the requested map object.
      */
-    getRoomLocation(type: MapObjectType): number {
-        return objectRoomNums[type];
+    public static getRoomLocation(type: string): number {
+        return objectRoomNums[type as MapObjectType];
     }
 
     /**
      * Sets the room location for the requested map object.
      */
-    setRoomLocation(type: string, roomNumber: number): void {
+    public static setRoomLocation(type: string, roomNumber: number): void {
         objectRoomNums[type as MapObjectType] = roomNumber;
         return;
     }
@@ -127,13 +127,13 @@ export class Map
      * Returns the new room number.
      */
     moveWumpusAfterMiss(): number {
-        let adjacentRooms: number[] = this.cave.getAdjacentRooms(this.getRoomLocation("wumpus" as MapObjectType));
+        let adjacentRooms: number[] = this.cave.getAdjacentRooms(Map.getRoomLocation("wumpus"));
         let roomToTravel: number = adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)];
-        this.setRoomLocation("wumpus", roomToTravel);
-        adjacentRooms = this.cave.getAdjacentRooms(this.getRoomLocation("wumpus" as MapObjectType));
+        Map.setRoomLocation("wumpus", roomToTravel);
+        adjacentRooms = this.cave.getAdjacentRooms(Map.getRoomLocation("wumpus"));
         roomToTravel = adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)];
-        this.setRoomLocation("wumpus", roomToTravel);
-        return this.getRoomLocation("wumpus" as MapObjectType);
+        Map.setRoomLocation("wumpus", roomToTravel);
+        return Map.getRoomLocation("wumpus");
     }
 
 
@@ -147,7 +147,7 @@ export class Map
         while (!excludedRooms.includes(roomToGoTo) && roomToGoTo != -1) {
             roomToGoTo = Math.floor(Math.random() * this.cave.getRoomCount()) + 1
         }
-        this.setRoomLocation("player", roomToGoTo);
+        Map.setRoomLocation("player", roomToGoTo);
         return 0;
     }
 
@@ -168,7 +168,7 @@ export class Map
         
         this.player.decrementResource("arrows");
 
-        const playerRoom: number = this.getRoomLocation("player" as MapObjectType);
+        const playerRoom: number = Map.getRoomLocation("player");
         const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
         const dirIndex: number = directionsOrder.indexOf(direction);
         if (dirIndex === -1) throw new Error(`Invalid cave direction '${direction}'`);
@@ -176,7 +176,7 @@ export class Map
         const targetRoom: number = adjacentRooms[dirIndex];
         if (!targetRoom || targetRoom <= 0) return -1;
 
-        const wumpusRoom: number = this.getRoomLocation("wumpus" as MapObjectType);
+        const wumpusRoom: number = Map.getRoomLocation("wumpus");
         if (targetRoom === wumpusRoom) {
             this.wumpusState = "dead"
             return targetRoom;
@@ -196,16 +196,16 @@ export class Map
      */
     simWumpus(): number {
         // move the wumpus if awake
-        const adjacentRooms: number[] = this.cave.getAdjacentRooms(this.getRoomLocation("wumpus"));
+        const adjacentRooms: number[] = this.cave.getAdjacentRooms(Map.getRoomLocation("wumpus"));
         if (this.wumpusState == "awake") {
-            this.setRoomLocation("wumpus", adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)]);
+            Map.setRoomLocation("wumpus", adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)]);
         }
         else if (this.wumpusState == "sleeping") {
-            if (adjacentRooms.includes(this.getRoomLocation("player")))
+            if (adjacentRooms.includes(Map.getRoomLocation("player")))
                 this.wumpusState = "awake";
         }
-        else this.setRoomLocation("wumpus", -1);
+        else Map.setRoomLocation("wumpus", -1);
 
-        return this.getRoomLocation("wumpus");
+        return Map.getRoomLocation("wumpus");
     }
 }
