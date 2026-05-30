@@ -1,7 +1,6 @@
 export type TerminalLine = {
 	text: string;
 	kind: "text" | "info" | "warn";
-	timestamp: Date;
 };
 
 export type TerminalListener = (lines: readonly TerminalLine[]) => void;
@@ -126,7 +125,7 @@ export class Terminal {
 	}
 
 	private push(text: string, kind: TerminalLine["kind"]): void {
-		this.lines.push({ text, kind, timestamp: new Date() });
+		this.lines.push({ text, kind });
 		if (this.lines.length > this.maxLines) {
 			this.lines.splice(0, this.lines.length - this.maxLines);
 		}
