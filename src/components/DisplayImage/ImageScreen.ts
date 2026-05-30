@@ -68,6 +68,6 @@ export class ImageScreen {
             }
             posX+=71;
         }
-        this.$container.show();
+        this.$container.show();//this is 
     }
 }
