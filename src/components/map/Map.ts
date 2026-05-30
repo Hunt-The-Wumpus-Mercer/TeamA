@@ -36,11 +36,13 @@ export class Map
     public cave: ICave;
     public player: Player;
     public wumpusState: string;
+    public visitedRooms: number[];
 
     constructor(cave: Cave, player: Player) {
         this.cave = cave;
         this.player = player;
         this.wumpusState = "sleeping";
+        this.visitedRooms = [];
     }
     
     /**
@@ -52,6 +54,10 @@ export class Map
         return;
     }
 
+
+    /** Ioves the player in the specified direction.
+     *  Returns the final room.
+     */
     movePlayer(direction: string): number {
         const directionsOrder = [
             CaveRoomDirections.NORTH,
@@ -70,8 +76,13 @@ export class Map
         if (dirIndex === -1) throw new Error(`Invalid cave direction '${direction}'`);
         else {
             Map.setRoomLocation("player", adjacentRooms[dirIndex]);
+            this.visitedRooms.push(adjacentRooms[dirIndex]);
             return adjacentRooms[dirIndex];
         }
+    }
+
+    checkIfVisited(room: number): boolean {
+        return this.visitedRooms.includes(room)
     }
 
     /**
