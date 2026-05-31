@@ -9,6 +9,7 @@ export const SoundEventType = {
     WARNING_BAT: "warning_bat",
     WARNING_PIT: "warning_pit",
     WARNING_WUMPUS: "warning_wumpus",
+    COIN: "coin",
 } as const;
 
 export type SoundEventType = (typeof SoundEventType)[keyof typeof SoundEventType];
