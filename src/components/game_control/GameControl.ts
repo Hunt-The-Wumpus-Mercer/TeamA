@@ -23,7 +23,7 @@ export class GameControl implements IGameControl {
     private terminal: Terminal = new Terminal();
     private image: ImageScreen = new ImageScreen();
     private startRoom: any;
-    private running = false;
+    private running: boolean = false;
     private pause = (ms: number | undefined) => new Promise(resolve => setTimeout(resolve, ms));
 
     init(containerSelector: string): void {
@@ -35,6 +35,7 @@ export class GameControl implements IGameControl {
         this.trivia.init($triviaContainer);
         this.highScores.init($highScoreContainer);
     }
+    
 
 
     public startGame(): void {
@@ -55,15 +56,15 @@ export class GameControl implements IGameControl {
         Map.setRoomLocation(MapObjectType.bat2, random());
         Map.setRoomLocation(MapObjectType.pit1, random());
         Map.setRoomLocation(MapObjectType.pit2, random());
+        this.running = true;
+        void this.update();
     }
-
-    private async updater(): Promise<void> {
-        while(this.running) {
+    private async update(): Promise<void> {
+        while (this.running) {
             this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
             await this.pause(2000);
         }
     }
-
     movePlayer(caveRoomDirection: CaveRoomDirections): void {
         this.terminal.println(`Player moved ${caveRoomDirection}`);
         this.map.movePlayer(caveRoomDirection);
