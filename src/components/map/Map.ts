@@ -75,7 +75,11 @@ export class Map
         const targetRoom: number = connectedRooms[dirIndex];
         if (!targetRoom || targetRoom <= 0) return -1;
         else {
+            if (!connectedRooms.includes(connectedRooms[dirIndex])) {
+                this.player.incrementResource('coins');
+            }
             Map.setRoomLocation("player", connectedRooms[dirIndex]);
+            this.simWumpus();
             this.visitedRooms.push(connectedRooms[dirIndex]);
             return connectedRooms[dirIndex];
         }
