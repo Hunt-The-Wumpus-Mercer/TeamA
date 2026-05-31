@@ -8,6 +8,7 @@ import loseSound from "./sound_resources/mrstokes302-you-lose-sfx-mrstokes302-52
 import batSound from "./sound_resources/dragon-studio-bird-wings-463212.mp3";
 import pitSound from "./sound_resources/dragon-studio-droplets-in-a-cave-482871.mp3";
 import growlSound from "./sound_resources/dragon-studio-monster-growl-376892.mp3";
+import coinSound from "./sound_resources/freesound_crunchpixstudio-drop-coin-384921.mp3";
 
 export default class SoundManager implements ISoundManager {
     
@@ -46,6 +47,10 @@ export default class SoundManager implements ISoundManager {
             }
             case SoundEventType.WARNING_BAT: {
                 path = growlSound;
+                break;
+            }
+            case SoundEventType.COIN: {
+                path = coinSound;
                 break;
             }
         }
