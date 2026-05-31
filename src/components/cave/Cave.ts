@@ -2,7 +2,7 @@ import type { ICave } from "./ICave";
 import Caves from "./Caves.json";
 
 interface RoomData {
-    adjacent: number[]; // length == 6
+    type: string; // length == 6
     connected: number[] // 0 <= length <= 3
 }
 
@@ -38,9 +38,9 @@ export class Cave implements ICave {
         }
     }
 
-    getAdjacentRooms(roomNumber: number): number[] {
+    getConnectedRooms(roomNumber: number): number[] {
         this.validateRoomNumber(roomNumber);
-        return this.rooms[roomNumber].adjacent;
+        return this.rooms[roomNumber].connected;
     }
 }
 

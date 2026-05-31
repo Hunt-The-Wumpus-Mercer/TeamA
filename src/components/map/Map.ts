@@ -69,7 +69,7 @@ export class Map
         ];
 
         const playerRoom: number = Map.getRoomLocation("player");
-        const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
+        const adjacentRooms: number[] = this.cave.getConnectedRooms(playerRoom);
         const dirIndex: number = directionsOrder.indexOf(direction);
         if (dirIndex === -1) throw new Error(`Invalid cave direction '${direction}'`);
         else {
@@ -129,7 +129,7 @@ export class Map
         
         const playerRoom: number =  Map.getRoomLocation("player")
         for (let i = 0; i < hazardRoomNums.length; i++) {
-            const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
+            const adjacentRooms: number[] = this.cave.getConnectedRooms(playerRoom);
             // if any adjacent room contains this hazard, add its warning
             if (adjacentRooms.includes(hazardRoomNums[i])) {
                 hazards.push(hazardNames[i]);
@@ -169,7 +169,7 @@ export class Map
                 break;
             }
 
-            const adjacentRooms: number[] = this.cave.getAdjacentRooms(currentRoom);
+            const adjacentRooms: number[] = this.cave.getConnectedRooms(currentRoom);
             for (const adjacentRoom of adjacentRooms) {
                 if (adjacentRoom <= 0 || visited.has(adjacentRoom)) {
                     continue;
@@ -193,7 +193,7 @@ export class Map
             nextRoom = previousRoom;
         }
 
-        const playerAdjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
+        const playerAdjacentRooms: number[] = this.cave.getConnectedRooms(playerRoom);
         const directionIndex = playerAdjacentRooms.indexOf(nextRoom);
         if (directionIndex === -1) {
             return null;
@@ -223,10 +223,10 @@ export class Map
      * Returns the new room number.
      */
     moveWumpusAfterMiss(): number {
-        let adjacentRooms: number[] = this.cave.getAdjacentRooms(Map.getRoomLocation("wumpus"));
+        let adjacentRooms: number[] = this.cave.getConnectedRooms(Map.getRoomLocation("wumpus"));
         let roomToTravel: number = adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)];
         Map.setRoomLocation("wumpus", roomToTravel);
-        adjacentRooms = this.cave.getAdjacentRooms(Map.getRoomLocation("wumpus"));
+        adjacentRooms = this.cave.getConnectedRooms(Map.getRoomLocation("wumpus"));
         roomToTravel = adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)];
         Map.setRoomLocation("wumpus", roomToTravel);
         return Map.getRoomLocation("wumpus");
@@ -265,7 +265,7 @@ export class Map
         this.player.decrementResource("arrows");
 
         const playerRoom: number = Map.getRoomLocation("player");
-        const adjacentRooms: number[] = this.cave.getAdjacentRooms(playerRoom);
+        const adjacentRooms: number[] = this.cave.getConnectedRooms(playerRoom);
         const dirIndex: number = directionsOrder.indexOf(direction);
         if (dirIndex === -1) throw new Error(`Invalid cave direction '${direction}'`);
 
@@ -292,7 +292,7 @@ export class Map
      */
     simWumpus(): number {
         // move the wumpus if awake
-        const adjacentRooms: number[] = this.cave.getAdjacentRooms(Map.getRoomLocation("wumpus"));
+        const adjacentRooms: number[] = this.cave.getConnectedRooms(Map.getRoomLocation("wumpus"));
         if (this.wumpusState == "awake") {
             Map.setRoomLocation("wumpus", adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)]);
         }
