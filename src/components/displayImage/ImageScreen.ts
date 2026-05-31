@@ -6,6 +6,7 @@ import attackingButtonUrl from '../../images/attackingButton.png';
 import movingButtonUrl from '../../images/movingButton.png';
 import arrowIconUrl from '../../images/arrowIcon.png';
 import coinIconUrl from '../../images/coinIcon.png';
+import playerUrl from '../../images/Player.png';
 //import { PlayerResourceType } from '../../components/IPlayer';
 
 export class ImageScreen {
@@ -13,9 +14,39 @@ export class ImageScreen {
     private coinCount = 0;
     private $container!: JQuery;
     private $imageArea!: JQuery;
+    private currentMode: 'move' | 'attack' = 'move';
+    private onAttackModeClick?: () => void;
+    private onMoveModeClick?: () => void;
+    private onArrowButtonClick?: () => void;
+    private terminalMessages: string[] = [];
+
     public updateCounts(count: number, coinCount: number) {
         this.arrowCount = count;
         this.coinCount = coinCount;
+        this.refreshUI();
+    }
+
+    public setCallbacks(
+        onAttack?: () => void,
+        onMove?: () => void,
+        onArrow?: () => void
+    ): void {
+        this.onAttackModeClick = onAttack;
+        this.onMoveModeClick = onMove;
+        this.onArrowButtonClick = onArrow;
+    }
+
+    public addTerminalMessage(message: string): void {
+        this.terminalMessages.push(message);
+        if (this.terminalMessages.length > 5) {
+            this.terminalMessages.shift();
+        }
+        this.refreshUI();
+    }
+
+    public setMode(mode: 'move' | 'attack'): void {
+        this.currentMode = mode;
+        this.refreshUI();
     }
 
     public init($container: JQuery): void {
@@ -24,6 +55,15 @@ export class ImageScreen {
         this.$container.html(uiTemplate);     
         this.$imageArea = this.$container.find('[data-slot="image-area"]');
     }
+
+    private refreshUI(): void {
+        // Update the displayed counts
+        const $arrows = this.$imageArea.find('[data-arrows-count]');
+        const $coins = this.$imageArea.find('[data-coins-count]');
+        if ($arrows.length) $arrows.text(this.arrowCount);
+        if ($coins.length) $coins.text(this.coinCount);
+    }
+
     public displayImage(imagePath: string): void {
         
         this.$imageArea.empty(); 
@@ -100,12 +140,107 @@ export class ImageScreen {
             'font-size': '36px',       
             'font-weight': 'bold'    
         });
-        displaySprite(this.$imageArea, attackingButtonUrl, 100, 400,225); //1. x position 2. y position 3. size
-        displaySprite(this.$imageArea, movingButtonUrl, 380, 400,200);
-        displaySprite(this.$imageArea, arrowIconUrl, 100, -50,200);
-        displaySprite(this.$imageArea, coinIconUrl, 350, -50,200);
+
+        // Create attack button with click handler
+        const $attackButton = $('<img>', {
+            src: attackingButtonUrl,
+            alt: 'Attack Button',
+            css: {
+                'position': 'absolute',
+                'width': '225px',
+                'height': 'auto',
+                'left': '100px',
+                'top': '400px',
+                'cursor': 'pointer',
+                'border': this.currentMode === 'attack' ? '3px solid yellow' : 'none'
+            }
+        }).on('click', () => {
+            this.currentMode = 'attack';
+            this.refreshUI();
+            if (this.onAttackModeClick) this.onAttackModeClick();
+            this.displayImage(imagePath);
+        });
+
+        // Create move button with click handler
+        const $moveButton = $('<img>', {
+            src: movingButtonUrl,
+            alt: 'Move Button',
+            css: {
+                'position': 'absolute',
+                'width': '200px',
+                'height': 'auto',
+                'left': '380px',
+                'top': '400px',
+                'cursor': 'pointer',
+                'border': this.currentMode === 'move' ? '3px solid yellow' : 'none'
+            }
+        }).on('click', () => {
+            this.currentMode = 'move';
+            this.refreshUI();
+            if (this.onMoveModeClick) this.onMoveModeClick();
+            this.displayImage(imagePath);
+        });
+
+        // Create terminal display between attack and arrow buttons
+        const terminalText = this.terminalMessages.join('<br>');
+        const $terminal = $('<div>', {
+            html: terminalText || 'Terminal ready...',
+            css: {
+                'position': 'absolute',
+                'left': '220px',
+                'top': '405px',
+                'width': '140px',
+                'height': '60px',
+                'background': '#222',
+                'color': '#0f0',
+                'padding': '5px',
+                'font-size': '10px',
+                'overflow': 'auto',
+                'border': '1px solid #0f0',
+                'z-index': '15'
+            }
+        });
+
+        // Create arrow button with click handler
+        const $arrowButton = $('<img>', {
+            src: arrowIconUrl,
+            alt: 'Buy Arrows',
+            css: {
+                'position': 'absolute',
+                'width': '200px',
+                'height': 'auto',
+                'left': '100px',
+                'top': '-50px',
+                'cursor': 'pointer'
+            }
+        }).on('click', () => {
+            if (this.onArrowButtonClick) this.onArrowButtonClick();
+        });
+
+        // Create coin icon
+        const $coinButton = $('<img>', {
+            src: coinIconUrl,
+            alt: 'Coins',
+            css: {
+                'position': 'absolute',
+                'width': '200px',
+                'height': 'auto',
+                'left': '350px',
+                'top': '-50px'
+            }
+        });
+
         this.$imageArea.append($arrows1);
         this.$imageArea.append($coins1);
+        this.$imageArea.append($attackButton);
+        this.$imageArea.append($moveButton);
+        this.$imageArea.append($terminal);
+        this.$imageArea.append($arrowButton);
+        this.$imageArea.append($coinButton);
         this.$container.show();//this is 
+    }
+    
+    public displayPlayer(x: number, y: number, size: number = 80): void {
+        displaySprite(this.$imageArea, playerUrl, x, y, size);
     }
 }

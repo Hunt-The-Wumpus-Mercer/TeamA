@@ -11,6 +11,7 @@ import type { EventType } from "../trivia/ITrivia";
 import type { IGameControl } from "./IGameControl";
 import { Terminal } from "../Terminal";
 import { ImageScreen } from "../displayImage/ImageScreen";
+import { initGameDisplay } from "../displayImage/ImageLoader";
 import $ from "jquery";
 
 export class GameControl implements IGameControl {
@@ -24,22 +25,85 @@ export class GameControl implements IGameControl {
     private image: ImageScreen = new ImageScreen();
     private startRoom: any;
     private running: boolean = false;
+    private gameMode: 'move' | 'attack' = 'move';
     private pause = (ms: number | undefined) => new Promise(resolve => setTimeout(resolve, ms));
 
     init(containerSelector: string): void {
         const $root = $(containerSelector);
         $root.empty();
-        const $triviaContainer = $('<div data-slot="trivia-ui"></div>');
-        const $highScoreContainer = $('<div data-slot="high-score-ui"></div>');
-        $root.append($triviaContainer, $highScoreContainer);
-        this.trivia.init($triviaContainer);
-        this.highScores.init($highScoreContainer);
+        
+        // Get available caves
+        const caves = this.cave.getAvailableCaves();
+        const caveOptions = caves.map(cave => `<option value="${cave}">${cave}</option>`).join('');
+        
+        // Create starting ui
+        const $startUI = $(`
+            <div id="setup-form" style="padding: 20px; text-align: center;">
+                <h2>Hunt the Wumpus</h2>
+                <div style="margin: 20px 0;">
+                    <label for="player-name">Player Name:</label>
+                    <input type="text" id="player-name" placeholder="Enter your name" style="padding: 5px; margin: 0 10px;">
+                </div>
+                <div style="margin: 20px 0;">
+                    <label for="cave-select">Select Cave:</label>
+                    <select id="cave-select" style="padding: 5px; margin: 0 10px;">
+                        ${caveOptions}
+                    </select>
+                </div>
+                <button id="start-btn" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Start Game</button>
+            </div>
+        `);
+        
+        $root.append($startUI);
+        
+        $('#start-btn').on('click', () => {
+            const playerName = $('#player-name').val() as string || 'Player';
+            const caveSelect = $('#cave-select').val() as string;
+            
+            this.player.setPlayerName(playerName);
+            this.cave.loadCave(caveSelect);
+            
+            $startUI.remove();
+            
+            const $gameContainer = $('<div id="game-container"></div>');
+            const $triviaContainer = $('<div data-slot="trivia-ui"></div>');
+            const $highScoreContainer = $('<div data-slot="high-score-ui"></div>');
+            const $terminalContainer = $('<div data-slot="terminal-ui"></div>');
+            
+            $root.append($gameContainer, $triviaContainer, $highScoreContainer, $terminalContainer);
+            this.image = initGameDisplay('#game-container');
+            this.trivia.init($triviaContainer);
+            this.highScores.init($highScoreContainer);
+            this.terminal.init($terminalContainer);
+            
+            this.startGame();
+            this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
+            this.image.setCallbacks(
+                () => {
+                    this.gameMode = 'attack';
+                    this.image.setMode('attack');
+                    this.image.addTerminalMessage('Attack mode enabled - press Q/E/W/D/A/S to shoot');
+                },
+                () => {
+                    this.gameMode = 'move';
+                    this.image.setMode('move');
+                    this.image.addTerminalMessage('Move mode enabled - press Q/E/W/D/A/S to move');
+                },
+                async () => {
+                    const result = await this.purchaseArrow();
+                    this.image.addTerminalMessage(result);
+                    this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
+                }
+            );
+            this.terminal.println("Game started! Use Q/E/W/D/A/S to move");
+            this.movement();
+        });
     }
     
 
 
     public startGame(): void {
-        this.player.incrementResource("arrows", 2);
+        this.player.incrementResource("arrows", 3);
         const total = this.cave.getRoomCount();
         const used = new Set<number>();
         const randNotTunnelRoom = () => {
@@ -61,26 +125,31 @@ export class GameControl implements IGameControl {
         void this.update();
     }
     public movement(): void {
-        while(this.running) {
         document.addEventListener('keydown', (event) => {
-        console.log(`Key pressed: ${event.key} (Code: ${event.code})`);
-        if (event.key === "q"){
-            this.movePlayer('north_west');
-        } else if (event.key === "e"){
-            this.movePlayer('north_east');
-        } else if (event.key === "w") {
-            this.movePlayer('north');
-        } else if (event.key === "d") {
-            this.movePlayer('south_east');
-        } else if (event.key === "a") {
-            this.movePlayer('south_west');
-        } else if (event.key === "s") {
-            this.movePlayer('south');
-        } else {
-
-        }
+            if (!this.running) return;
+            console.log(`Key pressed: ${event.key} (Code: ${event.code})`);
+            
+            const direction = this.getDirectionFromKey(event.key);
+            if (!direction) return;
+            
+            if (this.gameMode === 'move') {
+                this.movePlayer(direction);
+            } else if (this.gameMode === 'attack') {
+                this.shootArrow(direction);
+            }
         });
     }
+
+    private getDirectionFromKey(key: string): CaveRoomDirections | null {
+        switch (key) {
+            case 'q': return 'north_west';
+            case 'e': return 'north_east';
+            case 'w': return 'north';
+            case 'd': return 'south_east';
+            case 'a': return 'south_west';
+            case 's': return 'south';
+            default: return null;
+        }
     }
     private async update(): Promise<void> {
         while (this.running) {
@@ -89,10 +158,17 @@ export class GameControl implements IGameControl {
         }
     }
     movePlayer(caveRoomDirection: CaveRoomDirections): void {
-        if (this.map.movePlayer(caveRoomDirection) == -1) 
-            this.terminal.println(`Player could not move to the ${caveRoomDirection}`);
-        else
-        this.terminal.println(`Player moved to the ${caveRoomDirection}`);
+        if (this.map.movePlayer(caveRoomDirection) == -1) {
+            const msg = `Player could not move to the ${caveRoomDirection}`;
+            this.terminal.println(msg);
+            this.image.addTerminalMessage(msg);
+        }
+        else {
+            const msg = `Player moved to the ${caveRoomDirection}`;
+            this.terminal.println(msg);
+            this.image.addTerminalMessage(msg);
+        }
+        this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
     }
 
     shootArrow(caveRoomDirection: CaveRoomDirections): string {
@@ -101,12 +177,18 @@ export class GameControl implements IGameControl {
         }
         else if (this.map.fireArrow(caveRoomDirection) === true) {
             this.player.setWumpusKilled();
-            this.terminal.println("You hit the wumpus!");
-            return "You hit the wumpus!";
+            const msg = "You hit the wumpus!";
+            this.terminal.println(msg);
+            this.image.addTerminalMessage(msg);
+            this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
+            return msg;
         }
         else {
-            this.terminal.println("You missed!");
-            return "You missed!";
+            const msg = "You missed!";
+            this.terminal.println(msg);
+            this.image.addTerminalMessage(msg);
+            this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
+            return msg;
         }
     }
 
