@@ -24,5 +24,6 @@ export interface ICave {
      */
     getConnectedRooms(roomNumber: number): number[];
 
+    /** true or false for the room you give */
     checkIfTunnel(roomNumber: number): boolean;
 }

@@ -1,9 +1,9 @@
 // define cave room directions that a user can navigate or shoot
 export const CaveRoomDirections = {
-    EAST: 'east',
+    NORTH: 'north',
     NORTH_EAST: 'north_east',
     SOUTH_EAST: 'south_east',
-    WEST: 'west',
+    SOUTH: 'south',
     SOUTH_WEST: 'south_west',
     NORTH_WEST: 'north_west'
 };

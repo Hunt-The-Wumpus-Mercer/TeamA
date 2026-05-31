@@ -56,26 +56,28 @@ export class Map
 
 
     /** Ioves the player in the specified direction.
-     *  Returns the final room.
+     *  Returns the final room, or -1 if that room is unreachable.
      */
     movePlayer(direction: string): number {
         const directionsOrder = [
-            CaveRoomDirections.EAST,
+            CaveRoomDirections.NORTH,
+            CaveRoomDirections.NORTH_WEST,
             CaveRoomDirections.NORTH_EAST,
+            CaveRoomDirections.SOUTH,
             CaveRoomDirections.SOUTH_EAST,
-            CaveRoomDirections.WEST,
-            CaveRoomDirections.SOUTH_WEST,
-            CaveRoomDirections.NORTH_WEST
+            CaveRoomDirections.SOUTH_WEST
         ];
 
         const playerRoom: number = Map.getRoomLocation("player");
-        const adjacentRooms: number[] = this.cave.getConnectedRooms(playerRoom);
+        const connectedRooms: number[] = this.cave.getConnectedRooms(playerRoom);
         const dirIndex: number = directionsOrder.indexOf(direction);
         if (dirIndex === -1) throw new Error(`Invalid cave direction '${direction}'`);
+        const targetRoom: number = connectedRooms[dirIndex];
+        if (!targetRoom || targetRoom <= 0) return -1;
         else {
-            Map.setRoomLocation("player", adjacentRooms[dirIndex]);
-            this.visitedRooms.push(adjacentRooms[dirIndex]);
-            return adjacentRooms[dirIndex];
+            Map.setRoomLocation("player", connectedRooms[dirIndex]);
+            this.visitedRooms.push(connectedRooms[dirIndex]);
+            return connectedRooms[dirIndex];
         }
     }
 
@@ -144,12 +146,12 @@ export class Map
      */
     public wumpusDirection(): CaveRoomDirections | null {
         const directionsOrder = [
-            CaveRoomDirections.EAST,
+            CaveRoomDirections.NORTH,
+            CaveRoomDirections.NORTH_WEST,
             CaveRoomDirections.NORTH_EAST,
+            CaveRoomDirections.SOUTH,
             CaveRoomDirections.SOUTH_EAST,
-            CaveRoomDirections.WEST,
-            CaveRoomDirections.SOUTH_WEST,
-            CaveRoomDirections.NORTH_WEST
+            CaveRoomDirections.SOUTH_WEST
         ];
 
         const playerRoom: number = Map.getRoomLocation("player");
@@ -254,22 +256,22 @@ export class Map
      */
     fireArrow(direction: string): boolean | number {
         const directionsOrder = [
-            CaveRoomDirections.EAST,
+            CaveRoomDirections.NORTH,
+            CaveRoomDirections.NORTH_WEST,
             CaveRoomDirections.NORTH_EAST,
+            CaveRoomDirections.SOUTH,
             CaveRoomDirections.SOUTH_EAST,
-            CaveRoomDirections.WEST,
-            CaveRoomDirections.SOUTH_WEST,
-            CaveRoomDirections.NORTH_WEST
+            CaveRoomDirections.SOUTH_WEST
         ];
         
         this.player.decrementResource("arrows");
 
         const playerRoom: number = Map.getRoomLocation("player");
-        const adjacentRooms: number[] = this.cave.getConnectedRooms(playerRoom);
+        const connectedRooms: number[] = this.cave.getConnectedRooms(playerRoom);
         const dirIndex: number = directionsOrder.indexOf(direction);
         if (dirIndex === -1) throw new Error(`Invalid cave direction '${direction}'`);
 
-        const targetRoom: number = adjacentRooms[dirIndex];
+        const targetRoom: number = connectedRooms[dirIndex];
         if (!targetRoom || targetRoom <= 0) return -1;
 
         const wumpusRoom: number = Map.getRoomLocation("wumpus");
