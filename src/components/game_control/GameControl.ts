@@ -89,8 +89,10 @@ export class GameControl implements IGameControl {
         }
     }
     movePlayer(caveRoomDirection: CaveRoomDirections): void {
-        this.terminal.println(`Player moved ${caveRoomDirection}`);
-        this.map.movePlayer(caveRoomDirection);
+        if (this.map.movePlayer(caveRoomDirection) == -1) 
+            this.terminal.println(`Player could not move to the ${caveRoomDirection}`);
+        else
+        this.terminal.println(`Player moved to the ${caveRoomDirection}`);
     }
 
     shootArrow(caveRoomDirection: CaveRoomDirections): string {
