@@ -23,4 +23,6 @@ export interface ICave {
      * Each value is a room number in the range 1..N, or 0 when no adjacent room exists.
      */
     getConnectedRooms(roomNumber: number): number[];
+
+    checkIfTunnel(roomNumber: number): boolean;
 }

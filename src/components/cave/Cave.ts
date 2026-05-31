@@ -42,6 +42,11 @@ export class Cave implements ICave {
         this.validateRoomNumber(roomNumber);
         return this.rooms[roomNumber].connected;
     }
+
+    checkIfTunnel(roomNumber: number): boolean {
+        return this.rooms[roomNumber].type == "tunnel"
+    }
+    
 }
 
 export function test_cave_files(): void {
