@@ -144,60 +144,57 @@ export class HighScoreGraphics {
 
         this.scoreRows.replaceChildren();
 
+        const table = document.createElement("table");
+        table.className = "ui-score-table";
+        table.style.width = "100%";
+        table.style.borderCollapse = "collapse";
+
+        const thead = document.createElement("thead");
+        const headRow = document.createElement("tr");
+        ["#", "Name", "Cave", "Score", "Moves", "Arrows", "Gold"].forEach(label => {
+            const th = document.createElement("th");
+            th.textContent = label;
+            th.style.textAlign = label === "Name" || label === "Cave" ? "left" : "center";
+            th.style.padding = "4px 8px";
+            th.style.borderBottom = "2px solid currentColor";
+            headRow.append(th);
+        });
+        thead.append(headRow);
+        table.append(thead);
+
+        const tbody = document.createElement("tbody");
         rows.forEach((score, index) => {
             const isEmpty = score.playerName === "EMPTY";
-            const row = document.createElement("div");
-            row.className = `ui-row ${isEmpty ? "is-empty" : ""}`;
+            const tr = document.createElement("tr");
+            tr.className = `ui-row ${isEmpty ? "is-empty" : ""}`.trim();
 
-            const rank = document.createElement("div");
-            rank.className = "ui-rank";
-            rank.textContent = String(index + 1).padStart(2, "0");
+            const cells = [
+                String(index + 1).padStart(2, "0"),
+                score.playerName,
+                score.caveName || "Unknown Cave",
+                isEmpty ? "EMPTY" : score.score.toString(),
+                score.moves.toString(),
+                score.arrowsLeft.toString(),
+                score.gold.toString(),
+            ];
 
-            const main = document.createElement("div");
-            main.className = "ui-main";
+            cells.forEach((value, cellIndex) => {
+                const td = document.createElement("td");
+                td.textContent = value;
+                td.style.textAlign = cellIndex === 1 || cellIndex === 2 ? "left" : "center";
+                td.style.padding = "4px 8px";
+                td.style.borderBottom = "1px solid currentColor";
+                tr.append(td);
+            });
 
-            const name = document.createElement("div");
-            name.className = "ui-name";
-            name.textContent = score.playerName;
-
-            const cave = document.createElement("div");
-            cave.className = "ui-cave";
-            cave.textContent = score.caveName || "Unknown Cave";
-
-            main.append(name, cave);
-
-            const stats = document.createElement("div");
-            stats.className = "ui-stats";
-
-            stats.append(
-                this.createStat("Score", isEmpty ? "EMPTY" : score.score.toString()),
-                this.createStat("Moves", score.moves.toString()),
-                this.createStat("Arrows", score.arrowsLeft.toString()),
-                this.createStat("Gold", score.gold.toString())
-            );
-
-            row.append(rank, main, stats);
-            this.scoreRows.append(row);
+            tbody.append(tr);
         });
+        table.append(tbody);
+
+        this.scoreRows.append(table);
     }
 
     private getSortedScores(scores: IHighScores[]): IHighScores[] {
         return [...scores].sort((a, b) => b.score - a.score);
-    }
-
-    private createStat(label: string, value: string): HTMLElement {
-        const stat = document.createElement("div");
-        stat.className = "ui-stat";
-
-        const statLabel = document.createElement("span");
-        statLabel.className = "ui-stat-label";
-        statLabel.textContent = label;
-
-        const statValue = document.createElement("span");
-        statValue.className = "ui-stat-value";
-        statValue.textContent = value;
-
-        stat.append(statLabel, statValue);
-        return stat;
     }
 }

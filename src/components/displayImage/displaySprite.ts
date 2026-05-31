@@ -9,7 +9,7 @@ export function displaySprite($imageArea: JQuery, spritePath: string, targetX: n
             'height': 'auto',
             'left': targetX + 'px',   
             'top': targetY + 'px',
-            //'z-index': '10'       
+            'z-index': '10'
         }
     });
 

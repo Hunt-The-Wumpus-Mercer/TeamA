@@ -66,7 +66,6 @@ export class TriviaGraphics {
 		if (!ctx) throw new Error('Error: 263472379 - Failed to get canvas context'); //error if you dont have canvas
 		this.ctx = ctx;
 		this.canvas.addEventListener('click', (e) => this.onCanvasClick(e));
-		this.canvas.addEventListener('keydown', (e) => this.onKeyDown(e as KeyboardEvent));
 	}
 
 	public showQuestion(question: Question): Promise<string> {

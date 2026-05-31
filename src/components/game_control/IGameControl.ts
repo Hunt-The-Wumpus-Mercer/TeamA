@@ -10,12 +10,12 @@ export interface IGameControl {
     /**
      * Attempts to move the player one room in the specified direction.
      */
-    movePlayer(caveRoomDirection: CaveRoomDirections): void;
+    movePlayer(caveRoomDirection: CaveRoomDirections): Promise<void>;
 
     /**
      * Shoots an arrow through the selected doorway direction.
      */
-    shootArrow(caveRoomDirection: CaveRoomDirections): string;
+    shootArrow(caveRoomDirection: CaveRoomDirections): Promise<void>;
 
     /**
      * Attempts to buy arrows by completing a trivia challenge.
