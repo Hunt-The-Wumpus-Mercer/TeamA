@@ -59,6 +59,28 @@ export class GameControl implements IGameControl {
         this.running = true;
         void this.update();
     }
+    public movement(): void {
+        while(this.running) {
+        document.addEventListener('keydown', (event) => {
+        console.log(`Key pressed: ${event.key} (Code: ${event.code})`);
+        if (event.key === "w"){
+            this.movePlayer('north_west');
+        } else if (event.key === "e"){
+            this.movePlayer('north_east');
+        } else if (event.key === "d") {
+            this.movePlayer('east');
+        } else if (event.key === "x") {
+            this.movePlayer('south_east');
+        } else if (event.key === "z") {
+            this.movePlayer('south_west');
+        } else if (event.key === "a") {
+            this.movePlayer('west');
+        } else {
+
+        }
+        });
+    }
+    }
     private async update(): Promise<void> {
         while (this.running) {
             this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());

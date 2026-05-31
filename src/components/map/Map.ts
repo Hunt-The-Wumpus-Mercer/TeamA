@@ -60,10 +60,10 @@ export class Map
      */
     movePlayer(direction: string): number {
         const directionsOrder = [
-            CaveRoomDirections.NORTH,
+            CaveRoomDirections.EAST,
             CaveRoomDirections.NORTH_EAST,
             CaveRoomDirections.SOUTH_EAST,
-            CaveRoomDirections.SOUTH,
+            CaveRoomDirections.WEST,
             CaveRoomDirections.SOUTH_WEST,
             CaveRoomDirections.NORTH_WEST
         ];
@@ -144,10 +144,10 @@ export class Map
      */
     public wumpusDirection(): CaveRoomDirections | null {
         const directionsOrder = [
-            CaveRoomDirections.NORTH,
+            CaveRoomDirections.EAST,
             CaveRoomDirections.NORTH_EAST,
             CaveRoomDirections.SOUTH_EAST,
-            CaveRoomDirections.SOUTH,
+            CaveRoomDirections.WEST,
             CaveRoomDirections.SOUTH_WEST,
             CaveRoomDirections.NORTH_WEST
         ];
@@ -254,10 +254,10 @@ export class Map
      */
     fireArrow(direction: string): boolean | number {
         const directionsOrder = [
-            CaveRoomDirections.NORTH,
+            CaveRoomDirections.EAST,
             CaveRoomDirections.NORTH_EAST,
             CaveRoomDirections.SOUTH_EAST,
-            CaveRoomDirections.SOUTH,
+            CaveRoomDirections.WEST,
             CaveRoomDirections.SOUTH_WEST,
             CaveRoomDirections.NORTH_WEST
         ];
