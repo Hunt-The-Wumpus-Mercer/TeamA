@@ -256,7 +256,7 @@ export class Map
     /**
      * Simulates firing an arrow in the given direction. (e.g. "north_east")
      * Automatically moves wumpus if the player misses.
-     * Returns -1 if fired out of bounds, otherwise the room fired into.
+     * Returns -1 if fired out of bounds or not connected to, otherwise the room fired into.
      */
     fireArrow(direction: string): boolean | number {
         const directionsOrder = [
