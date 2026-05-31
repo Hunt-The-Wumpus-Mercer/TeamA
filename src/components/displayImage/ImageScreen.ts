@@ -9,8 +9,14 @@ import coinIconUrl from '../../images/coinIcon.png';
 //import { PlayerResourceType } from '../../components/IPlayer';
 
 export class ImageScreen {
+    private arrowCount = 0;
+    private coinCount = 0;
     private $container!: JQuery;
     private $imageArea!: JQuery;
+    public updateCounts(count: number, coinCount: number) {
+        this.arrowCount = count;
+        this.coinCount = coinCount;
+    }
 
     public init($container: JQuery): void {
         this.$container = $container;         
@@ -74,8 +80,8 @@ export class ImageScreen {
             }
             posX+=80;
         }
-        //const arrowCount = player.getResource("arrows");
-        const $arrows1 = $('<div>', { text: '3' }).css({
+        
+        const $arrows1 = $('<div>', { text: this.arrowCount }).css({
             'position': 'absolute', 
             'left': '250px', 
             'top': '-38px', 
@@ -84,7 +90,8 @@ export class ImageScreen {
             'font-size': '36px',       
             'font-weight': 'bold'    
         });
-        const $coins1= $('<div>', { text: '100' }).css({
+        
+        const $coins1= $('<div>', { text: this.coinCount }).css({
             'position': 'absolute', 
             'left': '450px', 
             'top': '-38px', 

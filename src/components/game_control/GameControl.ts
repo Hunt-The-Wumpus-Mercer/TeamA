@@ -10,6 +10,7 @@ import { TriviaGraphics } from "../trivia/TriviaGraphics";
 import type { EventType } from "../trivia/ITrivia";
 import type { IGameControl } from "./IGameControl";
 import { Terminal } from "../Terminal";
+import { ImageScreen } from "../displayImage/ImageScreen";
 import $ from "jquery";
 
 export class GameControl implements IGameControl {
@@ -20,7 +21,10 @@ export class GameControl implements IGameControl {
     private highScores: HighScoreGraphics = new HighScoreGraphics();
     private trivia: TriviaGraphics = new TriviaGraphics();
     private terminal: Terminal = new Terminal();
+    private image: ImageScreen = new ImageScreen();
     private startRoom: any;
+    private running = false;
+    private pause = (ms: number | undefined) => new Promise(resolve => setTimeout(resolve, ms));
 
     init(containerSelector: string): void {
         const $root = $(containerSelector);
@@ -39,7 +43,8 @@ export class GameControl implements IGameControl {
         const used = new Set<number>();
         const random = () => {
             let rand: number;
-            do { rand = Math.floor(Math.random() * total) + 1; } while (used.has(rand));
+            do { rand = Math.floor(Math.random() * total) + 1; }
+            while (used.has(rand));
             used.add(rand);
             return rand;
         };
@@ -50,6 +55,13 @@ export class GameControl implements IGameControl {
         Map.setRoomLocation(MapObjectType.bat2, random());
         Map.setRoomLocation(MapObjectType.pit1, random());
         Map.setRoomLocation(MapObjectType.pit2, random());
+    }
+
+    private async updater(): Promise<void> {
+        while(this.running) {
+            this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
+            await this.pause(2000);
+        }
     }
 
     movePlayer(caveRoomDirection: CaveRoomDirections): void {
