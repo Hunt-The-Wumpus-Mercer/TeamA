@@ -42,20 +42,21 @@ export class GameControl implements IGameControl {
         this.player.incrementResource("arrows", 2);
         const total = this.cave.getRoomCount();
         const used = new Set<number>();
-        const random = () => {
+        const randNotTunnelRoom = () => {
             let rand: number;
             do { rand = Math.floor(Math.random() * total) + 1; }
             while (used.has(rand));
             used.add(rand);
-            return rand;
+            if (this.cave.checkIfTunnel(rand)) return randNotTunnelRoom();
+            else return rand;
         };
-        this.startRoom = random();
+        this.startRoom = randNotTunnelRoom();
         Map.setRoomLocation(MapObjectType.player, this.startRoom);
-        Map.setRoomLocation(MapObjectType.wumpus, random());
-        Map.setRoomLocation(MapObjectType.bat1, random());
-        Map.setRoomLocation(MapObjectType.bat2, random());
-        Map.setRoomLocation(MapObjectType.pit1, random());
-        Map.setRoomLocation(MapObjectType.pit2, random());
+        Map.setRoomLocation(MapObjectType.wumpus, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.bat1, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.bat2, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.pit1, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.pit2, randNotTunnelRoom());
         this.running = true;
         void this.update();
     }
@@ -63,18 +64,18 @@ export class GameControl implements IGameControl {
         while(this.running) {
         document.addEventListener('keydown', (event) => {
         console.log(`Key pressed: ${event.key} (Code: ${event.code})`);
-        if (event.key === "w"){
+        if (event.key === "q"){
             this.movePlayer('north_west');
         } else if (event.key === "e"){
             this.movePlayer('north_east');
+        } else if (event.key === "w") {
+            this.movePlayer('north');
         } else if (event.key === "d") {
-            this.movePlayer('east');
-        } else if (event.key === "x") {
             this.movePlayer('south_east');
-        } else if (event.key === "z") {
-            this.movePlayer('south_west');
         } else if (event.key === "a") {
-            this.movePlayer('west');
+            this.movePlayer('south_west');
+        } else if (event.key === "s") {
+            this.movePlayer('south');
         } else {
 
         }
