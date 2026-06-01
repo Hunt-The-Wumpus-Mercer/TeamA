@@ -2,7 +2,7 @@ import type { ICave } from "./ICave";
 import Caves from "./Caves.json";
 
 interface RoomData {
-    type: string; // length == 6
+    type: string; // either tunnel or 
     connected: number[] // 0 <= length <= 3
 }
 

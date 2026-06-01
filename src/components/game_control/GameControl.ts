@@ -13,6 +13,7 @@ import { Terminal } from "../Terminal";
 import { ImageScreen } from "../displayImage/ImageScreen";
 import { initGameDisplay } from "../displayImage/ImageLoader";
 import $ from "jquery";
+import { PlayerResourceType } from "../player/IPlayer";
 
 export class GameControl implements IGameControl {
     private player: Player = new Player();
@@ -189,18 +190,16 @@ export class GameControl implements IGameControl {
         const result = this.map.fireArrow(caveRoomDirection);
         this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
 
-        if (result === -1) {
-            this.announce(`There is no tunnel to the ${prettyDir} to shoot down.`);
-            return;
-        }
-
         if (result === true) {
             this.player.setWumpusKilled();
             await this.gameOver(true, 'Your arrow finds its mark — the Wumpus is slain! You win!');
             return;
+        } else if (result === -1) {
+            this.announce(`There is no tunnel to the ${prettyDir} to shoot down.`);
+        } else {
+            this.announce('Your arrow vanishes into the dark. You missed, and the Wumpus moves...');
         }
 
-        this.announce('Your arrow vanishes into the dark. You missed, and the Wumpus moves...');
         if (this.player.getArrowsLeft() <= 0) {
             await this.gameOver(false, 'You are out of arrows. The Wumpus will get you eventually. Game over.');
         }
@@ -299,8 +298,12 @@ export class GameControl implements IGameControl {
     }
 
     async purchaseArrow(): Promise<string> {
-        this.player.incrementResource("arrows");
-        return this.runTriviaEvent("ARROWS", 'You bought arrows.', 'Not enough correct answers to buy arrows.');
+        const result = await this.runTriviaEvent("ARROWS", 'You bought arrows.', 'Not enough correct answers to buy arrows.');
+        if (result == 'You bought arrows.') {
+            this.player.incrementResource(PlayerResourceType.ARROWS);
+        }
+
+        return result
     }
 
     async purchaseSecret(): Promise<string> {
@@ -334,6 +337,9 @@ export class GameControl implements IGameControl {
     }
 
     private async runTriviaEvent(eventType: EventType, successMessage: string | (() => string) | null | CaveRoomDirections, failureMessage: string | (() => string)): Promise<string> {
+        if (this.player.getGold() <= 0) {
+            return "BANKRUPT";
+        }
         this.player.decrementResource("coins");
         this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
         if (await this.checkBankruptcy()) return 'BANKRUPT';
