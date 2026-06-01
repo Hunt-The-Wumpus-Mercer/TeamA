@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="400" height="400">
+    <polygon points="55.00,22.06 145.00,22.06 190.00,100.00 145.00,177.94 55.00,177.94 10.00,100.00" fill="transparent" stroke="black" stroke-width="4" stroke-linejoin="round"/>
+    
+    <path d="M 100.00,22.06 C 100.00,64.93 130.38,82.46 167.50,61.03" fill="none" stroke="black" stroke-width="20" stroke-linecap="butt"/>
+    
+    <path d="M 100.00,22.06 C 100.00,64.93 130.38,82.46 167.50,61.03" fill="none" stroke="white" stroke-width="14" stroke-linecap="butt"/>
+</svg>
