@@ -79,14 +79,6 @@ export class Map {
      * If wumpus is present, it appears first in the result.
      */
     public getHazardsInPlayerRoom(): Hazards[] {
-        const hazardRoomIndexes: number[] = [
-            Map.getRoomLocation(MapObjectType.WUMPUS),
-            Map.getRoomLocation(MapObjectType.BAT_1),
-            Map.getRoomLocation(MapObjectType.BAT_2),
-            Map.getRoomLocation(MapObjectType.PIT_1),
-            Map.getRoomLocation(MapObjectType.PIT_2)
-        ];
-
         const playerRoomIndex: number =  Map.getRoomLocation(MapObjectType.PLAYER);
 
         // Populates hazards
@@ -199,8 +191,8 @@ export class Map {
     /**
      * Sets the room location for the requested map object.
      */
-    public static setRoomLocation(type: string, roomNumber: number): void {
-        mapObjectLocations[type as MapObjectType] = roomNumber;
+    public static setRoomLocation(mapObject: MapObjectType, roomNumber: number): void {
+        mapObjectLocations[mapObject] = roomNumber;
     }
 
     /**
@@ -237,7 +229,7 @@ export class Map {
      * Automatically moves wumpus if the player misses.
      * Returns -1 if fired out of bounds or not connected to, otherwise the room fired into.
      */
-    public fireArrow(direction: string): boolean | number {
+    public fireArrow(direction: CaveRoomDirections): boolean | number {
         this.player.decrementResource(PlayerResourceType.ARROWS);
 
         const playerRoom: number = Map.getRoomLocation(MapObjectType.PLAYER);
