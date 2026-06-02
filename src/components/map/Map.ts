@@ -107,7 +107,7 @@ export class Map {
         const hazards = this.getHazardsInPlayerRoom();
 
         const warnings: string[] = [];
-        warnings.forEach(hazard => {
+        hazards.forEach(hazard => {
             switch (hazard) {
                     case Hazards.WUMPUS: 
                         warnings.push(wumpusWarnings[Math.floor(Math.random() * wumpusWarnings.length)]);
