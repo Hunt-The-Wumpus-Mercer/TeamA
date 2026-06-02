@@ -110,14 +110,14 @@ export class Map {
         warnings.forEach(hazard => {
             switch (hazard) {
                     case Hazards.WUMPUS: 
-                        hazards.push(wumpusWarnings[Math.floor(Math.random() * wumpusWarnings.length)]);
+                        warnings.push(wumpusWarnings[Math.floor(Math.random() * wumpusWarnings.length)]);
                         break;
                     case Hazards.BAT:
-                        hazards.push(batWarnings[Math.floor(Math.random() * batWarnings.length)]);
+                        warnings.push(batWarnings[Math.floor(Math.random() * batWarnings.length)]);
                         break;
                     
                     case Hazards.PIT: 
-                        hazards.push(pitWarnings[Math.floor(Math.random() * pitWarnings.length)]);
+                        warnings.push(pitWarnings[Math.floor(Math.random() * pitWarnings.length)]);
                         break;
                 }
         });
