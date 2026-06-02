@@ -7,15 +7,14 @@ export const MapObjectType = {
     PIT_2: "pit2",
 } as const;
 
+export type MapObjectType = (typeof MapObjectType)[keyof typeof MapObjectType];
+
 export interface HexRoomResult {
     roomAsset: string;
     rotationDegrees: number;
 }
 
-interface ObjectRooms {
-        [name: string]: number;
-    }
-export let objectRoomNums: ObjectRooms = {
+export const mapObjectLocations = {
     player: -1,
     wumpus: -1,
     bat1: -1,

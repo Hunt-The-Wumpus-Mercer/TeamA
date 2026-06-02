@@ -1,7 +1,6 @@
 import { Cave } from "../cave/Cave";
 import { Hazards, MapObjectType, WumpusState } from "./IMap";
-import type { ICave } from "../cave/ICave";
-import { objectRoomNums, type HexRoomResult } from "./IMap";
+import { mapObjectLocations, type HexRoomResult } from "./IMap";
 import { CaveRoomDirections } from "../shared/CaveRoomDirections";
 import { Player } from "../player/Player";
 import { PlayerResourceType } from "../player/IPlayer";
@@ -287,18 +286,9 @@ export class Map {
         let indexA = -1;
         let indexB = -1;
 
-        const connections: boolean[] = [
-            this.cave.getConnectedRooms(room)[0] != 0,
-            this.cave.getConnectedRooms(room)[1] != 0,
-            this.cave.getConnectedRooms(room)[2] != 0,
-            this.cave.getConnectedRooms(room)[3] != 0,
-            this.cave.getConnectedRooms(room)[4] != 0,
-            this.cave.getConnectedRooms(room)[5] != 0
-        ]
-
         // 1. Find the two active connections
         for (let i = 0; i < 6; i++) {
-            if (connections[i]) {
+            if (this.cave.getConnectedRooms(room)[i] > 0) {
                 if (indexA === -1) {
                     indexA = i;
                 } else {
@@ -319,11 +309,22 @@ export class Map {
 
         // 3. Select the room based on the distance
         switch (distance) {
-            case 1: roomAsset = "tunnel_1_North_East"; break;
-            case 2: roomAsset = "tunnel_2_South_East"; break;
-            case 3: roomAsset = "tunnel_3_South"; break;
-            case 4: roomAsset = "tunnel_4_South_West"; break;
-            case 5: roomAsset = "tunnel_5_North_West"; break;
+            case 1: 
+                roomAsset = "tunnel_1_North_East";
+                break;
+            case 2:
+                roomAsset = "tunnel_2_South_East";
+                break;
+            case 3:
+                roomAsset = "tunnel_3_South";
+                break;
+            case 4:
+                roomAsset = "tunnel_4_South_West";
+                break;
+            case 5:
+                roomAsset = "tunnel_5_North_West";
+                break;
+
             default: throw new Error("Unexpected connection indices.");
     }
 
