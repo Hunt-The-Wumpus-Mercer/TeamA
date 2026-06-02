@@ -5,10 +5,10 @@ import type { IPerformance } from "../high_scores/IHighScores";
 import { Map } from "../map/Map";
 import { MapObjectType } from "../map/IMap";
 import { Player } from "../player/Player";
-import type { CaveRoomDirections } from "../shared/CaveRoomDirections";
+import { CaveRoomDirections } from "../shared/CaveRoomDirections";
 import { TriviaGraphics } from "../trivia/TriviaGraphics";
 import type { EventType } from "../trivia/ITrivia";
-import type { IGameControl } from "./IGameControl";
+import { GameMode, type IGameControl } from "./IGameControl";
 import { Terminal } from "../Terminal";
 import { ImageScreen } from "../displayImage/ImageScreen";
 import { initGameDisplay } from "../displayImage/ImageLoader";
@@ -26,7 +26,7 @@ export class GameControl implements IGameControl {
     private image: ImageScreen = new ImageScreen();
     private startRoom: any;
     private running: boolean = false;
-    private gameMode: 'move' | 'attack' = 'move';
+    private gameMode: GameMode = GameMode.MOVE;
     private busy: boolean = false;
     private pause = (ms: number | undefined) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -83,13 +83,13 @@ export class GameControl implements IGameControl {
             this.image.setPlayerRoom(this.startRoom, this.cave.getRoomCount());
             this.image.setCallbacks(
                 () => {
-                    this.gameMode = 'attack';
-                    this.image.setMode('attack');
+                    this.gameMode = GameMode.ATTACK;
+                    this.image.setMode(GameMode.ATTACK);
                     this.image.addTerminalMessage('Attack mode enabled - press Q/E/W/D/A/S to shoot');
                 },
                 () => {
-                    this.gameMode = 'move';
-                    this.image.setMode('move');
+                    this.gameMode = GameMode.MOVE;
+                    this.image.setMode(GameMode.MOVE);
                     this.image.addTerminalMessage('Move mode enabled - press Q/E/W/D/A/S to move');
                 },
                 async () => {
@@ -106,7 +106,7 @@ export class GameControl implements IGameControl {
 
 
     public startGame(): void {
-        this.player.incrementResource("arrows", 3);
+        this.player.incrementResource(PlayerResourceType.ARROWS, 3);
         const total = this.cave.getRoomCount();
         const used = new Set<number>();
         const randNotTunnelRoom = () => {
@@ -118,12 +118,12 @@ export class GameControl implements IGameControl {
             else return rand;
         };
         this.startRoom = randNotTunnelRoom();
-        Map.setRoomLocation(MapObjectType.player, this.startRoom);
-        Map.setRoomLocation(MapObjectType.wumpus, randNotTunnelRoom());
-        Map.setRoomLocation(MapObjectType.bat1, randNotTunnelRoom());
-        Map.setRoomLocation(MapObjectType.bat2, randNotTunnelRoom());
-        Map.setRoomLocation(MapObjectType.pit1, randNotTunnelRoom());
-        Map.setRoomLocation(MapObjectType.pit2, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.PLAYER, this.startRoom);
+        Map.setRoomLocation(MapObjectType.WUMPUS, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.BAT_1, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.BAT_2, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.PIT_1, randNotTunnelRoom());
+        Map.setRoomLocation(MapObjectType.PIT_2, randNotTunnelRoom());
         this.running = true;
         void this.update();
     }
@@ -139,7 +139,7 @@ export class GameControl implements IGameControl {
             // or a shot) is resolving so trivia/high-score screens aren't
             // interrupted by stray key presses.
             this.busy = true;
-            const action = this.gameMode === 'move'
+            const action = this.gameMode === GameMode.MOVE
                 ? this.movePlayer(direction)
                 : this.shootArrow(direction);
             void action.finally(() => { this.busy = false; });
@@ -148,12 +148,12 @@ export class GameControl implements IGameControl {
 
     private getDirectionFromKey(key: string): CaveRoomDirections | null {
         switch (key) {
-            case 'q': return 'north_west';
-            case 'e': return 'north_east';
-            case 'w': return 'north';
-            case 'd': return 'south_east';
-            case 'a': return 'south_west';
-            case 's': return 'south';
+            case 'q': return CaveRoomDirections.NORTH_WEST;
+            case 'e': return CaveRoomDirections.NORTH_EAST;
+            case 'w': return CaveRoomDirections.NORTH;
+            case 'd': return CaveRoomDirections.SOUTH_EAST;
+            case 'a': return CaveRoomDirections.SOUTH_WEST;
+            case 's': return CaveRoomDirections.SOUTH;
             default: return null;
         }
     }
@@ -171,13 +171,13 @@ export class GameControl implements IGameControl {
         }
 
         this.player.incrementResource("turns");
-        const room = Map.getRoomLocation(MapObjectType.player);
+        const room = Map.getRoomLocation(MapObjectType.PLAYER);
         this.announce(`You move ${prettyDir} into room ${room}.`);
         this.image.movePlayerInDirection(caveRoomDirection);
 
         // Surface warnings about hazards in adjacent rooms.
-        for (const hazard of this.map.getWarningsNearPlayer()) {
-            this.announce(this.warningFor(hazard));
+        for (const warningMessage of this.map.getWarningsNearPlayer()) {
+            this.announce(warningMessage);
         }
 
         this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
@@ -211,22 +211,22 @@ export class GameControl implements IGameControl {
      * bats. Ends the game (showing high scores) on a fatal encounter.
      */
     private async handleHazards(): Promise<void> {
-        const room = Map.getRoomLocation(MapObjectType.player);
+        const room = Map.getRoomLocation(MapObjectType.PLAYER);
 
-        if (room === Map.getRoomLocation(MapObjectType.wumpus)) {
+        if (room === Map.getRoomLocation(MapObjectType.WUMPUS)) {
             this.announce('You walked straight into the Wumpus!');
             const survived = await this.trivia.showQuestions('WUMPUS');
             if (survived) {
                 this.announce('You kept your nerve and slipped past the Wumpus!');
-                Map.setRoomLocation(MapObjectType.wumpus, this.randomNonTunnelRoom(new Set([room])));
+                Map.setRoomLocation(MapObjectType.WUMPUS, this.randomNonTunnelRoom(new Set([room])));
             } else {
                 await this.gameOver(false, 'The Wumpus devoured you. Game over.');
             }
             return;
         }
 
-        if (room === Map.getRoomLocation(MapObjectType.pit1) ||
-            room === Map.getRoomLocation(MapObjectType.pit2)) {
+        if (room === Map.getRoomLocation(MapObjectType.PIT_1) ||
+            room === Map.getRoomLocation(MapObjectType.PIT_2)) {
             this.announce('The floor gives way — you tumble toward a bottomless pit!');
             const survived = await this.trivia.showQuestions('PIT');
             if (survived) {
@@ -237,10 +237,10 @@ export class GameControl implements IGameControl {
             return;
         }
 
-        if (room === Map.getRoomLocation(MapObjectType.bat1) ||
-            room === Map.getRoomLocation(MapObjectType.bat2)) {
+        if (room === Map.getRoomLocation(MapObjectType.BAT_1) ||
+            room === Map.getRoomLocation(MapObjectType.BAT_2)) {
             const dest = this.randomNonTunnelRoom(new Set([room]));
-            Map.setRoomLocation(MapObjectType.player, dest);
+            Map.setRoomLocation(MapObjectType.PLAYER, dest);
             this.announce(`Giant bats snatch you up and drop you in room ${dest}!`);
             await this.handleHazards();
         }
@@ -257,9 +257,9 @@ export class GameControl implements IGameControl {
         if (won) {
             const perf: IPerformance = {
                 won: true,
-                moves: this.player.getMoves(),
+                turnes: this.player.getMoves(),
                 arrowsLeft: this.player.getArrowsLeft(),
-                gold: this.player.getGold()
+                coins: this.player.getGold()
             };
             this.highScoreData.addScore(this.player.getPlayerName(), perf);
             this.highScores.show(
@@ -281,14 +281,6 @@ export class GameControl implements IGameControl {
             if (!exclude.has(rand) && !this.cave.checkIfTunnel(rand)) return rand;
         }
         return rand;
-    }
-
-    /** Maps a hazard name to a player-facing warning message. */
-    private warningFor(hazard: string): string {
-        if (hazard === 'wumpus') return 'You smell something terrible and monstrous nearby.';
-        if (hazard.startsWith('bat')) return 'You hear the chaotic flutter of giant bats nearby.';
-        if (hazard.startsWith('pit')) return 'You feel a cold draft rising from a nearby pit.';
-        return 'Something feels off nearby.';
     }
 
     /** Echoes a message to both the side terminal and the in-game display. */
@@ -323,9 +315,9 @@ export class GameControl implements IGameControl {
         if (this.player.isWumpusKilled() === true) {
             const perf: IPerformance = {
                 won: true,
-                moves: this.player.getMoves(),
+                turnes: this.player.getMoves(),
                 arrowsLeft: this.player.getArrowsLeft(),
-                gold: this.player.getGold()
+                coins: this.player.getGold()
             };
             this.highScoreData.addScore(this.player.getPlayerName(), perf);
             await this.viewHighScores();

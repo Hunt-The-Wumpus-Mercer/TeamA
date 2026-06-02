@@ -1,5 +1,12 @@
 import type { CaveRoomDirections } from "../shared/CaveRoomDirections";
 
+export const GameMode = {
+    ATTACK: "attack",
+    MOVE: "move"
+} as const;
+
+export type GameMode = (typeof GameMode)[keyof typeof GameMode];
+
 export interface IGameControl {
 
     /**

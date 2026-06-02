@@ -1,4 +1,4 @@
-import type { IHighScores } from "./IHighScores";
+import type { HighScoreData } from "./IHighScores";
 import type { HighScore } from "./HighScores";
 
 type ScoreSource = Pick<HighScore, "getScores">;
@@ -128,7 +128,7 @@ export class HighScoreGraphics {
     }
 
 
-    private renderScoreRows(scores: IHighScores[]): void {
+    private renderScoreRows(scores: HighScoreData[]): void {
         const rows = this.getSortedScores(scores).slice(0, 10);
 
         while (rows.length < 10) {
@@ -136,9 +136,9 @@ export class HighScoreGraphics {
                 playerName: "EMPTY",
                 caveName: "Unknown Cave",
                 score: 0,
-                moves: 0,
+                turns: 0,
                 arrowsLeft: 0,
-                gold: 0,
+                coins: 0,
             });
         }
 
@@ -173,9 +173,9 @@ export class HighScoreGraphics {
                 score.playerName,
                 score.caveName || "Unknown Cave",
                 isEmpty ? "EMPTY" : score.score.toString(),
-                score.moves.toString(),
+                score.turns.toString(),
                 score.arrowsLeft.toString(),
-                score.gold.toString(),
+                score.coins.toString(),
             ];
 
             cells.forEach((value, cellIndex) => {
@@ -194,7 +194,7 @@ export class HighScoreGraphics {
         this.scoreRows.append(table);
     }
 
-    private getSortedScores(scores: IHighScores[]): IHighScores[] {
+    private getSortedScores(scores: HighScoreData[]): HighScoreData[] {
         return [...scores].sort((a, b) => b.score - a.score);
     }
 }

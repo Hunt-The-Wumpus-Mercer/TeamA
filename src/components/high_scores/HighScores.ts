@@ -1,4 +1,4 @@
-import type { IHighScores, IPerformance } from "./IHighScores";
+import type { HighScoreData , IPerformance} from "./IHighScores";
 export class HighScore {
     // encryption key for JSON file
     private readonly KEY = '1a2b3c';
@@ -12,14 +12,14 @@ export class HighScore {
         }
     }
 
-    private normalizeScore(score: Partial<IHighScores>): IHighScores {
+    private normalizeScore(score: Partial<HighScoreData>): HighScoreData {
         return {
             playerName: score.playerName?.trim() || 'EMPTY',
             caveName: score.caveName?.trim() || 'Unknown Cave',
             score: Number.isFinite(score.score) ? Number(score.score) : 0,
-            moves: Number.isFinite(score.moves) ? Number(score.moves) : 0,
+            turns: Number.isFinite(score.turns) ? Number(score.turns) : 0,
             arrowsLeft: Number.isFinite(score.arrowsLeft) ? Number(score.arrowsLeft) : 0,
-            gold: Number.isFinite(score.gold) ? Number(score.gold) : 0,
+            coins: Number.isFinite(score.coins) ? Number(score.coins) : 0,
         };
     }
 
@@ -28,13 +28,13 @@ export class HighScore {
         if (!perf.won) return 0;
 
         const baseScore = 100;
-        const penalty = perf.moves;
-        const bonus = perf.arrowsLeft * 10 + perf.gold;
+        const penalty = perf.turnes;
+        const bonus = perf.arrowsLeft * 10 + perf.coins;
         return Math.max(0, baseScore - penalty + bonus);
     }
 
     // returns scores
-    public getScores(): IHighScores[] {
+    public getScores(): HighScoreData[] {
         const storage = this.getStorage();
         if (!storage) return [];
 
@@ -42,7 +42,7 @@ export class HighScore {
         if (!scoresJSON) return [];
 
         try {
-            const parsedScores = JSON.parse(scoresJSON) as Partial<IHighScores>[];
+            const parsedScores = JSON.parse(scoresJSON) as Partial<HighScoreData>[];
             if (!Array.isArray(parsedScores)) {
                 return [];
             }
@@ -63,13 +63,13 @@ export class HighScore {
         const score = this.calculateScore(perf);
         if (score <= 0) return;
 
-        const Entry: IHighScores = {
+        const Entry: HighScoreData = {
             playerName: playerName.trim() || 'User',
             caveName: 'Unknown Cave',
             score: score,
-            moves: perf.moves,
+            turns: perf.turnes,
             arrowsLeft: perf.arrowsLeft,
-            gold: perf.gold,
+            coins: perf.coins,
         };
 
         const currentScores = this.getScores();

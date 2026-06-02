@@ -7,6 +7,7 @@ import movingButtonUrl from '../../images/movingButton.png';
 import arrowIconUrl from '../../images/arrowIcon.png';
 import coinIconUrl from '../../images/coinIcon.png';
 import playerUrl from '../../images/Player.png';
+import { GameMode } from '../game_control/IGameControl';
 
 export class ImageScreen {
     private arrowCount = 0;
@@ -23,7 +24,7 @@ export class ImageScreen {
     private currentCellIdx = -1;
     private playerRoom = 0;
     private roomCount = 0;
-    private currentMode: 'move' | 'attack' = 'move';
+    private currentMode: GameMode = GameMode.MOVE;
     private onAttackModeClick?: () => void;
     private onMoveModeClick?: () => void;
     private onArrowButtonClick?: () => void;
@@ -53,7 +54,7 @@ export class ImageScreen {
         this.refreshUI();
     }
 
-    public setMode(mode: 'move' | 'attack'): void {
+    public setMode(mode: GameMode): void {
         this.currentMode = mode;
         this.refreshUI();
     }
@@ -164,10 +165,10 @@ export class ImageScreen {
                 'left': '15px',
                 'top': '320px',
                 'cursor': 'pointer',
-                'border': this.currentMode === 'attack' ? '3px solid yellow' : 'none'
+                'border': this.currentMode === GameMode.ATTACK ? '3px solid yellow' : 'none'
             }
         }).on('click', () => {
-            this.currentMode = 'attack';
+            this.currentMode = GameMode.ATTACK;
             this.refreshUI();
             if (this.onAttackModeClick) this.onAttackModeClick();
             this.displayImage(imagePath);
@@ -184,10 +185,10 @@ export class ImageScreen {
                 'left': '725px',
                 'top': '320px',
                 'cursor': 'pointer',
-                'border': this.currentMode === 'move' ? '3px solid yellow' : 'none'
+                'border': this.currentMode === GameMode.MOVE ? '3px solid yellow' : 'none'
             }
         }).on('click', () => {
-            this.currentMode = 'move';
+            this.currentMode = GameMode.MOVE;
             this.refreshUI();
             if (this.onMoveModeClick) this.onMoveModeClick();
             this.displayImage(imagePath);

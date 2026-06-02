@@ -1,16 +1,15 @@
 export const MapObjectType = {
-    player: "player",
-    wumpus: "wumpus",
-    bat1: "bat1",
-    bat2: "bat2",
-    pit1: "pit1",
-    pit2: "pit2",
+    PLAYER: "player",
+    WUMPUS: "wumpus",
+    BAT_1: "bat1",
+    BAT_2: "bat2",
+    PIT_1: "pit1",
+    PIT_2: "pit2",
 } as const;
 
-interface ObjectRooms {
-        [name: string]: number;
-    }
-export let objectRoomNums: ObjectRooms = {
+export type MapObjectType = (typeof MapObjectType)[keyof typeof MapObjectType];
+
+export const mapObjectLocations = {
     player: -1,
     wumpus: -1,
     bat1: -1,
@@ -19,4 +18,18 @@ export let objectRoomNums: ObjectRooms = {
     pit2: -1
 };
 
-export type MapObjectType = (typeof MapObjectType)[keyof typeof MapObjectType];
+export const WumpusState = {
+    SLEEPING: "sleeping",
+    AWAKE: "awake",
+    DEAD: "dead"
+} as const;
+
+export type WumpusState = (typeof WumpusState)[keyof typeof WumpusState];
+
+export const Hazards = {
+    WUMPUS: "wumpus",
+    BAT: "bat",
+    PIT: "pit"
+}
+
+export type Hazards = (typeof Hazards)[keyof typeof Hazards];

@@ -2,7 +2,7 @@ import type { ICave } from "./ICave";
 import Caves from "./Caves.json";
 
 interface RoomData {
-    type: string; // either tunnel or 
+    isTunnel: boolean;
     connected: number[] // 0 <= length <= 3
 }
 
@@ -44,9 +44,8 @@ export class Cave implements ICave {
     }
 
     checkIfTunnel(roomNumber: number): boolean {
-        return this.rooms[roomNumber].type == "tunnel"
+        return this.rooms[roomNumber].isTunnel;
     }
-    
 }
 
 export function test_cave_files(): void {

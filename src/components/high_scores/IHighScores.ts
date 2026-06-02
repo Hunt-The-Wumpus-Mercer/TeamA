@@ -1,15 +1,15 @@
-export interface IHighScores {
+export interface HighScoreData {
     playerName: string;
-    caveName?: string;
+    caveName: string;
     score: number;
-    moves: number;
+    turns: number;
     arrowsLeft: number;
-    gold: number;
+    coins: number;
 }
 
 export interface IPerformance {
     won: boolean;
-    moves: number;
+    turnes: number;
     arrowsLeft: number;
-    gold: number;
+    coins: number;
 }
