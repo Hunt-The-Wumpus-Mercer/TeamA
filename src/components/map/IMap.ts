@@ -30,6 +30,6 @@ export const Hazards = {
     WUMPUS: "wumpus",
     BAT: "bat",
     PIT: "pit"
-}
+} as const;
 
 export type Hazards = (typeof Hazards)[keyof typeof Hazards];
