@@ -109,17 +109,17 @@ export class Map {
         const hazards = this.getHazardsInPlayerRoom();
 
         const warnings: string[] = [];
-        hazards.forEach(hazard => {
+        warnings.forEach(hazard => {
             switch (hazard) {
                     case Hazards.WUMPUS: 
-                        warnings.push(wumpusWarnings[Math.floor(Math.random() * wumpusWarnings.length)]);
+                        hazards.push(wumpusWarnings[Math.floor(Math.random() * wumpusWarnings.length)]);
                         break;
                     case Hazards.BAT:
-                        warnings.push(batWarnings[Math.floor(Math.random() * batWarnings.length)]);
+                        hazards.push(batWarnings[Math.floor(Math.random() * batWarnings.length)]);
                         break;
                     
                     case Hazards.PIT: 
-                        warnings.push(pitWarnings[Math.floor(Math.random() * pitWarnings.length)]);
+                        hazards.push(pitWarnings[Math.floor(Math.random() * pitWarnings.length)]);
                         break;
                 }
         });
