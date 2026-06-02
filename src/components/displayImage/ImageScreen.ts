@@ -7,7 +7,6 @@ import movingButtonUrl from '../../images/movingButton.png';
 import arrowIconUrl from '../../images/arrowIcon.png';
 import coinIconUrl from '../../images/coinIcon.png';
 import playerUrl from '../../images/Player.png';
-//import { PlayerResourceType } from '../../components/IPlayer';
 
 export class ImageScreen {
     private arrowCount = 0;

@@ -12,7 +12,7 @@ export class Terminal {
 	private containerEl: HTMLElement | null = null;
 	private scrollOnUpdate = true;
 
-	constructor(maxLines = 500) {
+	constructor(maxLines = 1) {
 		this.maxLines = Math.max(1, maxLines);
 	}
 
