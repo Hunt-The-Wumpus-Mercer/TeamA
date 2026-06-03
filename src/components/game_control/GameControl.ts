@@ -14,6 +14,7 @@ import { ImageScreen } from "../displayImage/ImageScreen";
 import { initGameDisplay } from "../displayImage/ImageLoader";
 import $ from "jquery";
 import { PlayerResourceType } from "../player/IPlayer";
+import { displaySprite } from "../displayImage/displaySprite";
 
 export class GameControl implements IGameControl {
     private player: Player = new Player();
@@ -296,6 +297,16 @@ export class GameControl implements IGameControl {
         }
 
         return result
+    }
+
+    public drawSprite(roomNumber: number, filePath: string, $htmlElement: JQuery) {
+        const columns = 6;
+        const spriteSize = 80;
+        const row: number = ((Math.floor(Math.max(1, Math.floor(roomNumber)) - 1)) / columns);
+        const column = (Math.floor(Math.max(1, Math.floor(roomNumber)) - 1)) % columns;
+        const y = row * 91;
+        const x = column * 91;
+        displaySprite($htmlElement, filePath, x, y, spriteSize);
     }
 
     async purchaseSecret(): Promise<string> {
