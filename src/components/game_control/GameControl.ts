@@ -299,7 +299,8 @@ export class GameControl implements IGameControl {
         return result
     }
 
-    public drawSprite(roomNumber: number, filePath: string, $htmlElement: JQuery) {
+    public drawSprite(roomNumber: number, filePath: string) {
+        const $htmlElement = $('#game-container');
         const columns = 6;
         const spriteSize = 80;
         const row: number = ((Math.floor(Math.max(1, Math.floor(roomNumber)) - 1)) / columns);
