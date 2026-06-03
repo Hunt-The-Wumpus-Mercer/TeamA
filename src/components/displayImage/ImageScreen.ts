@@ -5,6 +5,7 @@ import { displaySprite } from './displaySprite';
 import attackingButtonUrl from '../../images/attackingButton.png';
 import movingButtonUrl from '../../images/movingButton.png';
 import arrowIconUrl from '../../images/arrowIcon.png';
+import secretButtonUrl from '../../images/secret.png';
 import coinIconUrl from '../../images/coinIcon.png';
 import playerUrl from '../../images/Player.png';
 import { GameMode } from '../game_control/IGameControl';
@@ -17,17 +18,18 @@ export class ImageScreen {
     private $arrowsCountEl?: JQuery;
     private $coinsCountEl?: JQuery;
     private playerPos = { x: 230, y: 180, size: 60 };
-    // Centers of each hex tile (in image-area coordinates), filled while the
-    // board is drawn. Used to place the player sprite on a specific cell.
     private cellPositions: { cx: number; cy: number }[] = [];
     // Index into cellPositions of the cell the player sprite currently sits on.
     private currentCellIdx = -1;
     private playerRoom = 0;
     private roomCount = 0;
     private currentMode: GameMode = GameMode.MOVE;
+    private $restartButtonEl?: JQuery;
     private onAttackModeClick?: () => void;
     private onMoveModeClick?: () => void;
     private onArrowButtonClick?: () => void;
+    private onSecretButtonClick?: () => void;
+    private onRestartButtonClick?: () => void;
     private terminalMessages: string[] = [];
 
     public updateCounts(count: number, coinCount: number) {
@@ -39,11 +41,15 @@ export class ImageScreen {
     public setCallbacks(
         onAttack?: () => void,
         onMove?: () => void,
-        onArrow?: () => void
+        onArrow?: () => void,
+        onSecret?: () => void,
+        onRestart?: () => void
     ): void {
         this.onAttackModeClick = onAttack;
         this.onMoveModeClick = onMove;
         this.onArrowButtonClick = onArrow;
+        this.onSecretButtonClick = onSecret;
+        this.onRestartButtonClick = onRestart;
     }
 
     public addTerminalMessage(message: string): void {
@@ -67,9 +73,6 @@ export class ImageScreen {
     }
 
     private refreshUI(): void {
-        // Update the live arrow/coin counters. These elements are created in
-        // displayImage(); we keep references so values update without
-        // re-rendering the whole board.
         if (this.$arrowsCountEl) this.$arrowsCountEl.text(this.arrowCount);
         if (this.$coinsCountEl) this.$coinsCountEl.text(this.coinCount);
     }
@@ -154,7 +157,6 @@ export class ImageScreen {
             'font-weight': 'bold'    
         });
 
-        // Create attack button with click handler (left column, below arrows)
         const $attackButton = $('<img>', {
             src: attackingButtonUrl,
             alt: 'Attack Button',
@@ -165,16 +167,15 @@ export class ImageScreen {
                 'left': '15px',
                 'top': '320px',
                 'cursor': 'pointer',
-                'border': this.currentMode === GameMode.ATTACK ? '3px solid yellow' : 'none'
+                'border': this.currentMode === GameMode.ATTACK ? '3px solid yellow' : 'none',
+                
             }
         }).on('click', () => {
-            this.currentMode = GameMode.ATTACK;
             this.refreshUI();
             if (this.onAttackModeClick) this.onAttackModeClick();
             this.displayImage(imagePath);
         });
 
-        // Create move button with click handler (right column, below coins)
         const $moveButton = $('<img>', {
             src: movingButtonUrl,
             alt: 'Move Button',
@@ -194,7 +195,6 @@ export class ImageScreen {
             this.displayImage(imagePath);
         });
 
-        // Create arrow button with click handler (left column, top)
         const $arrowButton = $('<img>', {
             src: arrowIconUrl,
             alt: 'Buy Arrows',
@@ -207,10 +207,50 @@ export class ImageScreen {
                 'cursor': 'pointer'
             }
         }).on('click', () => {
-            if (this.onArrowButtonClick) this.onArrowButtonClick();
+            console.log('[DEBUG] Buy Arrows button click detected');
+            if (this.onArrowButtonClick) {
+                this.onArrowButtonClick();
+            } else {
+                console.log('[DEBUG] Arrow callback is not set');
+            }
+        });
+        const $secretButton = $('<img>', {
+            src: secretButtonUrl,
+            alt: 'Buy Secret',
+            css: {
+                'position': 'absolute',
+                'width': '90px',
+                'height': 'auto',
+                'left': '20px',
+                'top': '220px',
+                'cursor': 'pointer',
+                'z-index': '2000'
+            }
+        }).on('click', () => {
+            console.log('[DEBUG] Buy Secret button click detected');
+            if (this.onSecretButtonClick) {
+                this.onSecretButtonClick();
+            } else {
+                console.log('[DEBUG] Secret callback is not set');
+            }
         });
 
-        // Create coin icon (right column, top)
+        const $restartButton = $('<button>', {
+            text: 'Restart',
+            css: {
+                'position': 'absolute',
+                'width': '90px',
+                'height': '36px',
+                'left': '730px',
+                'top': '230px',
+                'cursor': 'pointer',
+                'display': 'none',
+                'z-index': '10000'
+            }
+        }).on('click', () => {
+            if (this.onRestartButtonClick) this.onRestartButtonClick();
+        });
+
         const $coinButton = $('<img>', {
             src: coinIconUrl,
             alt: 'Coins',
@@ -228,12 +268,15 @@ export class ImageScreen {
         this.$imageArea.append($attackButton);
         this.$imageArea.append($moveButton);
         this.$imageArea.append($arrowButton);
+        this.$imageArea.append($secretButton);
+        this.$imageArea.append($restartButton);
         this.$imageArea.append($coinButton);
 
         // Keep references so live updates (counts, terminal) can target these
         // elements without redrawing the whole board.
         this.$arrowsCountEl = $arrows1;
         this.$coinsCountEl = $coins1;
+        this.$restartButtonEl = $restartButton;
 
         // Place the player sprite on its current hex cell and draw it last so it
         // sits on top of the grid and is re-added on every board redraw.
@@ -333,5 +376,75 @@ export class ImageScreen {
     public displayPlayer(x: number, y: number, size: number = 80): void {
         this.playerPos = { x, y, size };
         this.drawPlayerSprite();
+    }
+
+    public setRestartVisible(visible: boolean): void {
+        if (!this.$restartButtonEl) return;
+        if (visible) {
+            try {
+                const $body = $('body');
+                $body.append(this.$restartButtonEl!);
+            } catch (e) {
+                // ignore if DOM not available
+            }
+            // position below the terminal if present
+            try {
+                const $term = $('[data-slot="terminal-ui"]').first();
+                if ($term.length && $term.offset()) {
+                    const off = $term.offset()!;
+                    const terminalTop = off.top + $term.outerHeight()! + 80;
+                    const left = off.left! + ($term.outerWidth()! / 2);
+                    const buttonHeight = 36;
+                    const winH = (window && window.innerHeight) ? window.innerHeight : ($(window).height() || 0);
+                    const fallbackTop = winH - 60 - buttonHeight;
+
+                    // Choose the lower (visually lower on screen) of the two placements
+                    if (terminalTop > fallbackTop) {
+                        this.$restartButtonEl.css({
+                            position: 'fixed',
+                            top: `${terminalTop}px`,
+                            left: `${left}px`,
+                            transform: 'translateX(-50%)',
+                            width: '90px',
+                            height: `${buttonHeight}px`,
+                            cursor: 'pointer',
+                            'z-index': '10000',
+                            display: 'block'
+                        });
+                    } else {
+                        this.$restartButtonEl.css({
+                            position: 'fixed',
+                            bottom: '60px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '90px',
+                            height: `${buttonHeight}px`,
+                            cursor: 'pointer',
+                            'z-index': '10000',
+                            display: 'block'
+                        });
+                    }
+                } else {
+                    this.$restartButtonEl.css({
+                        position: 'fixed',
+                        bottom: '60px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '90px',
+                        height: '36px',
+                        cursor: 'pointer',
+                        'z-index': '10000',
+                        display: 'block'
+                    });
+                }
+            } catch (e) {
+                this.$restartButtonEl.css({ display: 'block' });
+            }
+        } else {
+            if (this.$imageArea && this.$imageArea.length) {
+                this.$imageArea.append(this.$restartButtonEl);
+            }
+            this.$restartButtonEl.css('display', 'none');
+        }
     }
 }

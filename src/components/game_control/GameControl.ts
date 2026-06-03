@@ -14,7 +14,8 @@ import { ImageScreen } from "../displayImage/ImageScreen";
 import { initGameDisplay } from "../displayImage/ImageLoader";
 import $ from "jquery";
 import { PlayerResourceType } from "../player/IPlayer";
-import { displaySprite } from "../displayImage/displaySprite";
+import batIconUrl from "../../images/batIcon.png";
+import pitIconUrl from "../../images/pitIcon.png";
 
 export class GameControl implements IGameControl {
     private player: Player = new Player();
@@ -30,9 +31,13 @@ export class GameControl implements IGameControl {
     private gameMode: GameMode = GameMode.MOVE;
     private busy: boolean = false;
     private pause = (ms: number | undefined) => new Promise(resolve => setTimeout(resolve, ms));
+    private $root?: JQuery;
+    private discoveredPitRooms = new Set<number>();
+    private discoveredBatRooms = new Set<number>();
 
     init(containerSelector: string): void {
         const $root = $(containerSelector);
+        this.$root = $root;
         $root.empty();
         
         // Get available caves
@@ -94,11 +99,24 @@ export class GameControl implements IGameControl {
                     this.image.addTerminalMessage('Move mode enabled - press Q/E/W/D/A/S to move');
                 },
                 async () => {
+                    console.log('[DEBUG] Arrow purchase callback entered');
                     const result = await this.purchaseArrow();
+                    console.log(`[DEBUG] Arrow purchase result: ${result}`);
                     this.image.addTerminalMessage(result);
                     this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
+                },
+                async () => {
+                    console.log('[DEBUG] Secret purchase callback entered');
+                    const result = await this.purchaseSecret();
+                    console.log(`[DEBUG] Secret purchase result: ${result}`);
+                    this.image.addTerminalMessage(result);
+                    this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
+                },
+                () => {
+                    window.location.reload();
                 }
             );
+            this.image.setRestartVisible(false);
             this.terminal.println("Game started! Use Q/E/W/D/A/S to move");
             this.movement();
         });
@@ -107,6 +125,10 @@ export class GameControl implements IGameControl {
 
 
     public startGame(): void {
+        this.discoveredPitRooms.clear();
+        this.discoveredBatRooms.clear();
+        $('#game-container [data-hazard-marker="true"]').remove();
+
         this.player.incrementResource(PlayerResourceType.ARROWS, 3);
         const total = this.cave.getRoomCount();
         const used = new Set<number>();
@@ -231,6 +253,7 @@ export class GameControl implements IGameControl {
             this.announce('The floor gives way — you tumble toward a bottomless pit!');
             const survived = await this.trivia.showQuestions('PIT');
             if (survived) {
+                this.revealHazard(room, 'pit');
                 this.announce('You catch the ledge and haul yourself back to safety!');
             } else {
                 await this.gameOver(false, 'You fell into the pit. Game over.');
@@ -240,8 +263,15 @@ export class GameControl implements IGameControl {
 
         if (room === Map.getRoomLocation(MapObjectType.BAT_1) ||
             room === Map.getRoomLocation(MapObjectType.BAT_2)) {
+            this.revealHazard(room, 'bat');
             const dest = this.randomNonTunnelRoom(new Set([room]));
             Map.setRoomLocation(MapObjectType.PLAYER, dest);
+            // Update the visual player sprite to match the new logical room
+            try {
+                this.image.setPlayerRoom(dest, this.cave.getRoomCount());
+            } catch (e) {
+                // ignore if image not mounted yet
+            }
             this.announce(`Giant bats snatch you up and drop you in room ${dest}!`);
             await this.handleHazards();
         }
@@ -263,13 +293,40 @@ export class GameControl implements IGameControl {
                 coins: this.player.getGold()
             };
             this.highScoreData.addScore(this.player.getPlayerName(), perf);
-            this.highScores.show(
-                this.highScoreData,
-                this.player.getPlayerName(),
-                this.highScoreData.calculateScore(perf)
-            );
+            this.showHighScoresOverlay(this.highScoreData, this.player.getPlayerName(), this.highScoreData.calculateScore(perf));
         } else {
-            this.highScores.show(this.highScoreData);
+            this.showHighScoresOverlay(this.highScoreData);
+        }
+    }
+
+    private showHighScoresOverlay(highScores: HighScore, playerName?: string, playerScore?: number) {
+        try {
+            // hide all children of the root except the high-score and terminal containers
+            if (this.$root) {
+                this.$root.children().each((_, el) => {
+                    const $el = $(el);
+                    if ($el.is('[data-slot="high-score-ui"]') || $el.is('[data-slot="terminal-ui"]')) {
+                        $el.show();
+                    } else {
+                        $el.hide();
+                    }
+                });
+            }
+
+            // show highscores and ensure restart button is visible
+            this.image.setRestartVisible(true);
+
+            // lock scroll and scroll to highscores
+            const $hs = this.$root ? this.$root.find('[data-slot="high-score-ui"]') : $('.ui-shell[data-role="high-score-overlay"]').first();
+            const top = $hs.length && $hs.offset() ? $hs.offset()!.top : 0;
+            window.scrollTo({ top, behavior: 'smooth' });
+            document.documentElement.style.overflow = 'hidden';
+
+            // show highscores (no close callback — page will remain focused on highscores
+            // and scroll locked; restart button will refresh the page)
+            this.highScores.show(highScores, playerName || '', playerScore);
+        } catch (e) {
+            this.highScores.show(highScores, playerName || '', playerScore);
         }
     }
 
@@ -300,18 +357,90 @@ export class GameControl implements IGameControl {
     }
 
     public drawSprite(roomNumber: number, filePath: string) {
-        const $htmlElement = $('#game-container');
-        const columns = 6;
-        const spriteSize = 80;
-        const row: number = ((Math.floor(Math.max(1, Math.floor(roomNumber)) - 1)) / columns);
-        const column = (Math.floor(Math.max(1, Math.floor(roomNumber)) - 1)) % columns;
-        const y = row * 91;
-        const x = column * 91;
-        displaySprite($htmlElement, filePath, x, y, spriteSize);
+        const room = Math.max(1, Math.floor(roomNumber));
+        const point = this.getRoomPixelCenter(room);
+        if (!point) return;
+        const size = 42;
+        const key = `debug-${room}-${filePath}`;
+        this.placeHazardMarker(key, filePath, point.x - size / 2, point.y - size / 2, size);
+    }
+
+    private revealHazard(room: number, hazard: 'pit' | 'bat'): void {
+        const roomNum = Math.max(1, Math.floor(room));
+        const seenSet = hazard === 'pit' ? this.discoveredPitRooms : this.discoveredBatRooms;
+        if (seenSet.has(roomNum)) return;
+        seenSet.add(roomNum);
+
+        const point = this.getRoomPixelCenter(roomNum);
+        if (!point) return;
+
+        const spritePath = hazard === 'pit' ? pitIconUrl : batIconUrl;
+        const key = `${hazard}-${roomNum}`;
+        const size = 42;
+        this.placeHazardMarker(key, spritePath, point.x - size / 2, point.y - size / 2, size);
+    }
+
+    private placeHazardMarker(key: string, spritePath: string, left: number, top: number, size: number): void {
+        const $game = $('#game-container');
+        if (!$game.length) return;
+
+        // Prefer to place markers inside the image area so coordinates align
+        const $imageArea = this.$root ? this.$root.find('[data-slot="image-area"]').first() : $game.find('[data-slot="image-area"]').first();
+
+        if ($game.find(`[data-hazard-key="${key}"]`).length > 0) return;
+
+        const $marker = $('<img>', {
+            src: spritePath,
+            alt: 'Hazard Marker',
+            css: {
+                position: 'absolute',
+                left: `${left}px`,
+                top: `${top}px`,
+                width: `${size}px`,
+                height: 'auto',
+                'z-index': '8',
+                'pointer-events': 'none'
+            }
+        })
+            .attr('data-hazard-marker', 'true')
+            .attr('data-hazard-key', key);
+
+        if ($imageArea && $imageArea.length) {
+            $imageArea.append($marker);
+        } else {
+            $game.append($marker);
+        }
+    }
+
+    private getRoomPixelCenter(roomNumber: number): { x: number; y: number } | null {
+        const totalRooms = this.cave.getRoomCount();
+        if (totalRooms <= 0) return null;
+
+        const positions: { x: number; y: number }[] = [];
+        let posX = 190;
+        for (let col = 0; col < 6; col++) {
+            let posY = col % 2 === 0 ? 50 : 4;
+            for (let row = 0; row < 5; row++) {
+                positions.push({ x: posX + 131 / 2, y: posY + 110 / 2 });
+                posY += 91;
+            }
+            posX += 80;
+        }
+
+        if (positions.length === 0) return null;
+        const rawIdx = positions.length === totalRooms
+            ? roomNumber - 1
+            : Math.floor((roomNumber - 1) / totalRooms * positions.length);
+        const idx = Math.max(0, Math.min(positions.length - 1, rawIdx));
+        return positions[idx];
     }
 
     async purchaseSecret(): Promise<string> {
-        return this.runTriviaEvent("SECRET", this.map.wumpusDirection(), 'You failed to buy a secret.');
+        const result = await this.runTriviaEvent("SECRET", this.map.wumpusDirection(), 'You failed to buy a secret.');
+        if (result !== 'BANKRUPT' && result !== 'NULL ERROR') {
+            this.terminal.println(result);
+        }
+        return result;
     }
 
     async saveFromPit(): Promise<string> {
@@ -342,6 +471,9 @@ export class GameControl implements IGameControl {
 
     private async runTriviaEvent(eventType: EventType, successMessage: string | (() => string) | null | CaveRoomDirections, failureMessage: string | (() => string)): Promise<string> {
         if (this.player.getGold() <= 0) {
+            if (this.running) {
+                await this.gameOver(false, 'You tried to spend coins with 0 gold. Game over.');
+            }
             return "BANKRUPT";
         }
         this.player.decrementResource("coins");

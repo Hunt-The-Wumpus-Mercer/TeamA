@@ -16,6 +16,10 @@ export class TriviaGraphics {
 	private inputText: string = '';
 	private listeningKeys = false;
 	private currentQuestion?: Question;
+	private isChallengeActive = false;
+	private prevOverflow = '';
+	private prevScrollY = 0;
+	private hiddenSiblingDisplays: Array<{ el: HTMLElement; display: string }> = [];
 
 	public init($container: JQuery): void {
 		this.$container = $container;
@@ -81,11 +85,11 @@ export class TriviaGraphics {
 
 		return new Promise<string>((resolve, reject) => {
 			this.activeResolve = (val: string) => {
-				this.cleanup();
+				if (!this.isChallengeActive) this.cleanup();
 				resolve(val);
 			};
 			this.activeReject = (err?: any) => {
-				this.cleanup();
+				if (!this.isChallengeActive) this.cleanup();
 				reject(err);
 			};
 
@@ -95,18 +99,24 @@ export class TriviaGraphics {
 
 	public async showQuestions(eventType: EventType): Promise<boolean> {
 		this.setChallengeCopy(eventType);
+		this.beginChallengeView();
 
-		switch (eventType) {
-			case 'PIT':
-				return this.trivia.saveFromPit((question) => this.showQuestion(question));
-			case 'SECRET':
-				return this.trivia.purchaseSecret((question) => this.showQuestion(question));
-			case 'WUMPUS':
-				return this.trivia.escapeWumpus((question) => this.showQuestion(question));
-			case 'ARROWS':
-				return this.trivia.purchaseArrows((question) => this.showQuestion(question));
-			default:
-				return false;
+		try {
+			switch (eventType) {
+				case 'PIT':
+					return await this.trivia.saveFromPit((question) => this.showQuestion(question));
+				case 'SECRET':
+					return await this.trivia.purchaseSecret((question) => this.showQuestion(question));
+				case 'WUMPUS':
+					return await this.trivia.escapeWumpus((question) => this.showQuestion(question));
+				case 'ARROWS':
+					return await this.trivia.purchaseArrows((question) => this.showQuestion(question));
+				default:
+					return false;
+			}
+		} finally {
+			this.endChallengeView();
+			this.cleanup();
 		}
 	}
 
@@ -124,6 +134,44 @@ export class TriviaGraphics {
 		this.inputText = '';
 		this.currentQuestion = undefined;
 		this.clearCanvas();
+	}
+
+	private beginChallengeView(): void {
+		this.isChallengeActive = true;
+		try {
+			this.prevOverflow = document.documentElement.style.overflow || '';
+			this.prevScrollY = window.scrollY || window.pageYOffset || 0;
+			const $root = this.$container.parent();
+			if ($root.length) {
+				this.hiddenSiblingDisplays = [];
+				$root.children().not(this.$container).each((_, node) => {
+					const el = node as HTMLElement;
+					const display = el.style.display;
+					this.hiddenSiblingDisplays.push({ el, display });
+					el.style.display = 'none';
+				});
+			}
+			this.$container.show();
+			const off = this.$container.offset();
+			window.scrollTo({ top: off ? off.top : 0, behavior: 'smooth' });
+			document.documentElement.style.overflow = 'hidden';
+		} catch (e) {
+			// no-op
+		}
+	}
+
+	private endChallengeView(): void {
+		this.isChallengeActive = false;
+		try {
+			for (const entry of this.hiddenSiblingDisplays) {
+				entry.el.style.display = entry.display;
+			}
+			this.hiddenSiblingDisplays = [];
+			document.documentElement.style.overflow = this.prevOverflow;
+			window.scrollTo(0, this.prevScrollY);
+		} catch (e) {
+			// no-op
+		}
 	}
 
 	private setChallengeCopy(eventType: EventType): void {

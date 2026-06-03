@@ -7,11 +7,6 @@ type SubmitHandler = (playerName: string) => void;
 export class HighScoreGraphics {
     private $container!: JQuery<HTMLElement>;
     private scoreRows!: HTMLElement;
-    private entrySection!: HTMLElement;
-    private pendingScore!: HTMLElement;
-    private closeButton!: HTMLButtonElement;
-    private isEntryOpen = false;
-    private onClose?: () => void;
 
     public init($container: JQuery<HTMLElement>): void {
         this.$container = $container;
@@ -39,64 +34,17 @@ export class HighScoreGraphics {
         copy.textContent = "Arcade hall of fame";
         headerCopy.append(kicker, title, copy);
 
-        const closeButton = document.createElement("button");
-        closeButton.type = "button";
-        closeButton.className = "ui-button";
-        closeButton.dataset.role = "close-high-scores";
-        closeButton.textContent = "Close";
-        header.append(headerCopy, closeButton);
+        header.append(headerCopy);
 
         const scoreRows = document.createElement("div");
         scoreRows.className = "ui-board";
         scoreRows.dataset.slot = "score-rows";
 
-        const entrySection = document.createElement("section");
-        entrySection.className = "ui-entry";
-        entrySection.dataset.slot = "entry-section";
-
-        const scoreLine = document.createElement("div");
-        scoreLine.className = "ui-scoreline";
-
-        const hint = document.createElement("p");
-        hint.className = "ui-hint";
-        hint.textContent = "Enter your initials using the arrows below";
-
-        const scoreHint = document.createElement("p");
-        scoreHint.className = "ui-hint";
-        scoreHint.append("Score: ");
-
-        const pendingScore = document.createElement("span");
-        pendingScore.dataset.slot = "pending-score";
-        pendingScore.textContent = "0";
-        scoreHint.append(pendingScore);
-
-        scoreLine.append(hint, scoreHint);
-
-        const slotRow = document.createElement("div");
-        slotRow.className = "ui-slot-row";
-
-        const nameSlots = document.createElement("div");
-        nameSlots.className = "ui-slot-grid";
-        nameSlots.dataset.slot = "name-slots";
-
-        const submitButton = document.createElement("button");
-        submitButton.type = "button";
-        submitButton.className = "ui-button";
-        submitButton.dataset.role = "submit-high-score";
-        submitButton.textContent = "Save Score";
-
-        slotRow.append(nameSlots, submitButton);
-        entrySection.append(scoreLine, slotRow);
-        panel.append(header, scoreRows, entrySection);
+        panel.append(header, scoreRows);
         shell.append(panel);
         this.$container.append(shell);
 
         this.scoreRows = scoreRows;
-        this.entrySection = entrySection;
-        this.pendingScore = pendingScore;
-        this.closeButton = closeButton;
-
-        this.closeButton.addEventListener("click", () => this.close());
 
         this.$container.hide();
     }
@@ -105,26 +53,18 @@ export class HighScoreGraphics {
         this.showHighScores(highScores, playerName, playerScore, onSubmit, onClose);
     }
 
-    public showHighScores(highScores: ScoreSource, playerName = "", playerScore?: number, onSubmit?: SubmitHandler, onClose?: () => void): void {
-        this.onClose = onClose;
-
+    public showHighScores(highScores: ScoreSource, _playerName = "", _playerScore?: number, _onSubmit?: SubmitHandler, _onClose?: () => void): void {
+        void _playerName;
+        void _playerScore;
+        void _onSubmit;
+        void _onClose;
         this.renderScoreRows(highScores.getScores());
-
-        const isEntryVisible = typeof playerScore === "number";
-        this.isEntryOpen = isEntryVisible;
-        this.entrySection.style.display = isEntryVisible ? "" : "none";
-        this.pendingScore.textContent = typeof playerScore === "number" ? playerScore.toString() : "0";
 
         this.$container.show();
     }
 
     public close(): void {
-        this.isEntryOpen = false;
         this.$container.hide();
-        if (this.onClose) {
-            this.onClose();
-            this.onClose = undefined;
-        }
     }
 
 
