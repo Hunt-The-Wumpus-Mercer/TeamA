@@ -96,7 +96,7 @@ export class ImageScreen {
 
         let posX = 190;
         for (let col = 0; col < 6; col++) {
-            let posY = col % 2 === 0 ? 50 : 4;
+            let posY = col % 2 === 0 ? 4 : 50;
             for (let row = 0; row < 5; row++) {
                 const $imgElement = $('<img>', {
                     src: imagePath,

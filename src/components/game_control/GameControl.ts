@@ -3,7 +3,7 @@ import { HighScore } from "../high_scores/HighScores";
 import { HighScoreGraphics } from "../high_scores/HighScoreGraphics";
 import type { IPerformance } from "../high_scores/IHighScores";
 import { Map } from "../map/Map";
-import { MapObjectType } from "../map/IMap";
+import { Hazards, MapObjectType } from "../map/IMap";
 import { Player } from "../player/Player";
 import { CaveRoomDirections } from "../shared/CaveRoomDirections";
 import { TriviaGraphics } from "../trivia/TriviaGraphics";
@@ -16,6 +16,8 @@ import $ from "jquery";
 import { PlayerResourceType } from "../player/IPlayer";
 import batIconUrl from "../../images/batIcon.png";
 import pitIconUrl from "../../images/pitIcon.png";
+import SoundManager from "../sound/SoundManager";
+import { SoundEventType } from "../sound/ISoundManager";
 
 export class GameControl implements IGameControl {
     private player: Player = new Player();
@@ -34,6 +36,7 @@ export class GameControl implements IGameControl {
     private $root?: JQuery;
     private discoveredPitRooms = new Set<number>();
     private discoveredBatRooms = new Set<number>();
+    private soundManager = new SoundManager();
 
     init(containerSelector: string): void {
         const $root = $(containerSelector);
@@ -186,13 +189,29 @@ export class GameControl implements IGameControl {
             return;
         }
 
-        this.player.incrementResource("turns");
+        this.player.incrementResource(PlayerResourceType.TURNS);
         const room = Map.getRoomLocation(MapObjectType.PLAYER);
         this.announce(`You move ${prettyDir} into room ${room}.`);
         this.image.setPlayerRoom(room, this.cave.getRoomCount());
+        this.soundManager.playSound(SoundEventType.WALK);
 
         for (const warningMessage of this.map.getWarningsNearPlayer()) {
             this.announce(warningMessage);
+        }
+
+        for (const hazard of this.map.getHazardsInPlayerRoom()) {
+            switch (hazard) {
+                case Hazards.WUMPUS: 
+                    this.soundManager.playSound(SoundEventType.WARNING_WUMPUS);
+                    break;
+
+                case Hazards.BAT:
+                    this.soundManager.playSound(SoundEventType.WARNING_BAT);
+                    break;
+
+                case Hazards.PIT:
+                    this.soundManager.playSound(SoundEventType.WARNING_PIT);
+            }
         }
 
         this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
@@ -203,6 +222,7 @@ export class GameControl implements IGameControl {
     async shootArrow(caveRoomDirection: CaveRoomDirections): Promise<void> {
         const prettyDir = caveRoomDirection.replace(/_/g, ' ');
         const result = this.map.fireArrow(caveRoomDirection);
+        this.soundManager.playSound(SoundEventType.SHOOT_ARROW);
         this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
 
         if (result === true) {
@@ -268,6 +288,7 @@ export class GameControl implements IGameControl {
         this.announce(message);
 
         if (won) {
+            this.soundManager.playSound(SoundEventType.WIN);
             const perf: IPerformance = {
                 won: true,
                 turnes: this.player.getMoves(),
@@ -277,6 +298,7 @@ export class GameControl implements IGameControl {
             this.highScoreData.addScore(this.player.getPlayerName(), perf);
             this.showHighScoresOverlay(this.highScoreData, this.player.getPlayerName(), this.highScoreData.calculateScore(perf));
         } else {
+            this.soundManager.playSound(SoundEventType.LOSE);
             this.showHighScoresOverlay(this.highScoreData);
         }
     }
