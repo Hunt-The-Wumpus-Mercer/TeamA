@@ -88,18 +88,9 @@ export class ImageScreen {
             'height': '540px'
         });
 
-        // Build column descriptors: 6 columns, 80px apart, alternating y-start
-        const columns: { posX: number; startY: number }[] = [];
         let posX = 190;
-        for (let j = 0; j < 6; j++) {
-            columns.push({ posX, startY: j % 2 === 0 ? 50 : 4 });
-            posX += 80;
-        }
-
-        // Place hexagons column-major (col0 rows 0-4, col1 rows 0-4, ...)
-        // This gives 30 cells matching cave rooms 1-30 in the same order
-        for (const col of columns) {
-            let posY = col.startY;
+        for (let col = 0; col < 6; col++) {
+            let posY = col % 2 === 0 ? 50 : 4;
             for (let row = 0; row < 5; row++) {
                 const $imgElement = $('<img>', {
                     src: imagePath,
@@ -108,18 +99,18 @@ export class ImageScreen {
                         'position': 'absolute',
                         'width': '131px',
                         'height': '110px',
-                        'left': col.posX + 'px',
+                        'left': posX + 'px',
                         'top': posY + 'px'
                     }
                 });
-                // Record the pixel centre of this hex
                 this.cellPositions.push({
-                    cx: col.posX + 131 / 2,
+                    cx: posX + 131 / 2,
                     cy: posY + 110 / 2
                 });
                 posY += 91;
-                this.$imageArea.append($imgElement); // ✅ only once
+                this.$imageArea.append($imgElement);
             }
+            posX += 80;
         }
 
         const $arrows1 = $('<div>', { text: this.arrowCount }).css({
@@ -258,17 +249,17 @@ export class ImageScreen {
     }
 
     private positionPlayerOnCell(): void {
-        const cells = this.cellPositions.length;
-        if (cells === 0 || this.roomCount <= 0 || this.playerRoom <= 0) return;
+        if (this.cellPositions.length === 0 || this.playerRoom <= 0) return;
 
-        const idx = this.roomCount === cells
-            ? this.playerRoom - 1
-            : Math.floor((this.playerRoom - 1) / this.roomCount * cells);
-        const safeIdx = Math.max(0, Math.min(cells - 1, idx));
-        const cell = this.cellPositions[safeIdx];
-        this.currentCellIdx = safeIdx;
+        const room = this.playerRoom - 1;
+        const row = Math.floor(room / 6);
+        const col = room % 6;
+        const cellIdx = col * 5 + row;
 
-        // cx/cy is the hex centre; subtract half sprite size to get top-left corner
+        const cell = this.cellPositions[cellIdx];
+        if (!cell) return;
+
+        this.currentCellIdx = cellIdx;
         this.playerPos = {
             x: cell.cx - this.playerPos.size / 2,
             y: cell.cy - this.playerPos.size / 2,
@@ -338,7 +329,7 @@ export class ImageScreen {
         if (visible) {
             try {
                 $('body').append(this.$restartButtonEl);
-            } catch (e) { /* ignore */ }
+            } catch (e) { }
             try {
                 const $term = $('[data-slot="terminal-ui"]').first();
                 if ($term.length && $term.offset()) {

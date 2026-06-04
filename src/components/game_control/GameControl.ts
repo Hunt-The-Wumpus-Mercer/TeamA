@@ -332,7 +332,6 @@ export class GameControl implements IGameControl {
         return result;
     }
 
-    // Uses ImageScreen's cell positions as the single source of truth
     private getRoomPixelCenter(roomNumber: number): { x: number; y: number } | null {
         const positions = this.image.getCellPositions();
         if (positions.length === 0) return null;
