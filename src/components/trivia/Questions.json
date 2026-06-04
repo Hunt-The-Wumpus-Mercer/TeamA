@@ -263,7 +263,7 @@
   {
     "id": 27,
     "type": "FRQ",
-    "prompt": "Consider the following class hierarchy:\n\npublic class Appliance {}\npublic class Refrigerator extends Appliance {}\n\nGiven the declarations below, which line of code will compile successfully?\n\nAppliance a = new Appliance();\nRefrigerator r = new Refrigerator();",
+    "prompt": "Consider the following class hierarchy:\n\npublic class Appliance {}\npublic class Refrigerator extends Appliance {}\n\nGiven the declarations below, make a line of code that works for the appliance name Refrigerator successfully?",
     "options": [],
     "answer": "Appliance y = new Refrigerator();"
   },

@@ -214,7 +214,7 @@ export class ImageScreen {
                 'width': '90px',
                 'height': '36px',
                 'left': '730px',
-                'top': '230px',
+                'top': '275px',
                 'cursor': 'pointer',
                 'display': 'none',
                 'z-index': '10000'
