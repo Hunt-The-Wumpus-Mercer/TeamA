@@ -257,7 +257,6 @@ export class GameControl implements IGameControl {
 
         if (room === Map.getRoomLocation(MapObjectType.PIT_1) ||
             room === Map.getRoomLocation(MapObjectType.PIT_2)) {
-            this.announce('The floor gives way — you tumble toward a bottomless pit!');
             const survived = await this.trivia.showQuestions('PIT');
             if (survived) {
                 this.revealHazard(room, 'pit');
@@ -267,7 +266,6 @@ export class GameControl implements IGameControl {
             } else {
                 await this.gameOver(false, 'You fell into the pit. Game over.');
             }
-            return;
         }
 
         if (room === Map.getRoomLocation(MapObjectType.BAT_1) ||
