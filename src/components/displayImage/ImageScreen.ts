@@ -84,7 +84,15 @@ export class ImageScreen {
         const row = Math.floor(r / 6);
         return col * 5 + row;
     }
-
+    public getRoomCoordinates(roomNumber: number): { x: number; y: number } | null {
+        if (this.cellPositions.length === 0 || roomNumber <= 0) return null;
+        
+        const cellIdx = this.roomToCellIdx(roomNumber);
+        const cell = this.cellPositions[cellIdx];
+        
+        if (!cell) return null;
+        return { x: cell.cx, y: cell.cy };
+    }
     public displayImage(imagePath: string): void {
         this.$imageArea.empty();
         this.cellPositions = [];

@@ -355,16 +355,7 @@ export class GameControl implements IGameControl {
     }
 
     private getRoomPixelCenter(roomNumber: number): { x: number; y: number } | null {
-        const positions = this.image.getCellPositions();
-        if (positions.length === 0) return null;
-
-        const totalRooms = this.cave.getRoomCount();
-        const idx = totalRooms === positions.length
-            ? roomNumber - 1
-            : Math.floor((roomNumber - 1) / totalRooms * positions.length);
-
-        const safe = Math.max(0, Math.min(positions.length - 1, idx));
-        return { x: positions[safe].cx, y: positions[safe].cy };
+        return this.image.getRoomCoordinates(roomNumber);
     }
 
     public drawSprite(roomNumber: number, filePath: string): void {
