@@ -78,6 +78,12 @@ export class ImageScreen {
     public getCellPositions(): { cx: number; cy: number }[] {
         return this.cellPositions;
     }
+    private roomToCellIdx(room: number): number {
+        const r = room - 1;
+        const col = r % 6;
+        const row = Math.floor(r / 6);
+        return col * 5 + row;
+    }
 
     public displayImage(imagePath: string): void {
         this.$imageArea.empty();
@@ -251,11 +257,7 @@ export class ImageScreen {
     private positionPlayerOnCell(): void {
         if (this.cellPositions.length === 0 || this.playerRoom <= 0) return;
 
-        const room = this.playerRoom - 1;
-        const row = Math.floor(room / 6);
-        const col = room % 6;
-        const cellIdx = col * 5 + row;
-
+        const cellIdx = this.roomToCellIdx(this.playerRoom);
         const cell = this.cellPositions[cellIdx];
         if (!cell) return;
 

@@ -340,7 +340,7 @@ export class Map {
 
     // 4. Calculate clockwise rotation (60° per index step)
     const rotationDegrees = indexA * 60;
-    return { roomAsset, rotationDegrees };
+        return { roomAsset, rotationDegrees };
     }
 
     
