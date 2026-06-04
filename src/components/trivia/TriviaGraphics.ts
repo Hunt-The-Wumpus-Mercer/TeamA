@@ -277,7 +277,7 @@ export class TriviaGraphics {
 		if (this.currentQuestion.type === 'MCQ' && this.currentQuestion.options) {
 			//show options
 			const opts = this.currentQuestion.options;
-			const btnW = Math.min(520, maxTextWidth);
+			const btnW = Math.max(520, maxTextWidth);
 			const btnH = 40;
 			const startY = 90;
 			const gap = 12;
