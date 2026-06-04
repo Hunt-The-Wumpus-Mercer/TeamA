@@ -30,8 +30,6 @@ export class HighScoreGraphics {
         title.className = "ui-title";
         title.textContent = "High Scores";
         const copy = document.createElement("p");
-        copy.className = "ui-copy";
-        copy.textContent = "Arcade hall of fame";
         headerCopy.append(kicker, title, copy);
 
         header.append(headerCopy);

@@ -200,15 +200,23 @@ export class Map {
      * Moves the wumpus after a missed shot to a room up to two moves away.
      * Returns the new room number.
      */
-    private moveWumpusAfterMiss(): number {
-        let adjacentRooms: number[] = this.cave.getConnectedRooms(Map.getRoomLocation(MapObjectType.WUMPUS));
-        let roomToTravel: number = adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)];
-        Map.setRoomLocation(MapObjectType.WUMPUS, roomToTravel);
-        adjacentRooms = this.cave.getConnectedRooms(Map.getRoomLocation(MapObjectType.WUMPUS));
-        roomToTravel = adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)];
-        Map.setRoomLocation(MapObjectType.WUMPUS, roomToTravel);
-        return Map.getRoomLocation(MapObjectType.WUMPUS);
+        private moveWumpusAfterMiss(): number {
+            const getValidRooms = (room: number) =>
+                this.cave.getConnectedRooms(room).filter(r => r > 0); 
+
+            let validRooms = getValidRooms(Map.getRoomLocation(MapObjectType.WUMPUS));
+            if (validRooms.length > 0) {
+                Map.setRoomLocation(MapObjectType.WUMPUS, validRooms[Math.floor(Math.random() * validRooms.length)]);
+            }
+
+            validRooms = getValidRooms(Map.getRoomLocation(MapObjectType.WUMPUS));
+            if (validRooms.length > 0) {
+                Map.setRoomLocation(MapObjectType.WUMPUS, validRooms[Math.floor(Math.random() * validRooms.length)]);
+            }
+
+            return Map.getRoomLocation(MapObjectType.WUMPUS);
     }
+
 
 
     /**
@@ -257,14 +265,16 @@ export class Map {
      * Awakens the wumpus if the player is adjacent.
      */
     private simWumpus(): void {
-        // move the wumpus if awake
-        const adjacentRooms: number[] = this.cave.getConnectedRooms(Map.getRoomLocation(MapObjectType.WUMPUS));
-        
+        const adjacentRooms: number[] = this.cave.getConnectedRooms(Map.getRoomLocation(MapObjectType.WUMPUS))
+            .filter(r => r > 0);
+
         switch (this.wumpusState) {
             case WumpusState.AWAKE:
-                Map.setRoomLocation(MapObjectType.WUMPUS, adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)]);
+                if (adjacentRooms.length > 0) {
+                    Map.setRoomLocation(MapObjectType.WUMPUS, adjacentRooms[Math.floor(Math.random() * adjacentRooms.length)]);
+                }
                 break;
-            
+
             case WumpusState.SLEEPING:
                 if (adjacentRooms.includes(Map.getRoomLocation(MapObjectType.PLAYER)))
                     this.wumpusState = WumpusState.AWAKE;

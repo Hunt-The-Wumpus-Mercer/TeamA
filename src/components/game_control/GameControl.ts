@@ -26,7 +26,7 @@ export class GameControl implements IGameControl {
     private trivia: TriviaGraphics = new TriviaGraphics();
     private terminal: Terminal = new Terminal();
     private image: ImageScreen = new ImageScreen();
-    private startRoom: any;
+    private startRoom: number = 0;
     private running: boolean = false;
     private gameMode: GameMode = GameMode.MOVE;
     private busy: boolean = false;
@@ -39,12 +39,10 @@ export class GameControl implements IGameControl {
         const $root = $(containerSelector);
         this.$root = $root;
         $root.empty();
-        
-        // Get available caves
+
         const caves = this.cave.getAvailableCaves();
         const caveOptions = caves.map(cave => `<option value="${cave}">${cave}</option>`).join('');
-        
-        // Create starting ui
+
         const $startUI = $(`
             <div id="setup-form" style="padding: 20px; text-align: center;">
                 <h2>Hunt the Wumpus</h2>
@@ -61,29 +59,29 @@ export class GameControl implements IGameControl {
                 <button id="start-btn" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Start Game</button>
             </div>
         `);
-        
+
         $root.append($startUI);
-        
+
         $('#start-btn').on('click', () => {
             const playerName = $('#player-name').val() as string || 'Player';
             const caveSelect = $('#cave-select').val() as string;
-            
+
             this.player.setPlayerName(playerName);
             this.cave.loadCave(caveSelect);
-            
+
             $startUI.remove();
-            
+
             const $gameContainer = $('<div id="game-container"></div>');
             const $triviaContainer = $('<div data-slot="trivia-ui"></div>');
             const $highScoreContainer = $('<div data-slot="high-score-ui"></div>');
             const $terminalContainer = $('<div data-slot="terminal-ui"></div>');
-            
+
             $root.append($gameContainer, $triviaContainer, $highScoreContainer, $terminalContainer);
             this.image = initGameDisplay('#game-container');
             this.trivia.init($triviaContainer);
             this.highScores.init($highScoreContainer);
             this.terminal.mount($terminalContainer.get(0));
-            
+
             this.startGame();
             this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
             this.image.setPlayerRoom(this.startRoom, this.cave.getRoomCount());
@@ -99,16 +97,12 @@ export class GameControl implements IGameControl {
                     this.image.addTerminalMessage('Move mode enabled - press Q/E/W/D/A/S to move');
                 },
                 async () => {
-                    console.log('[DEBUG] Arrow purchase callback entered');
                     const result = await this.purchaseArrow();
-                    console.log(`[DEBUG] Arrow purchase result: ${result}`);
                     this.image.addTerminalMessage(result);
                     this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
                 },
                 async () => {
-                    console.log('[DEBUG] Secret purchase callback entered');
                     const result = await this.purchaseSecret();
-                    console.log(`[DEBUG] Secret purchase result: ${result}`);
                     this.image.addTerminalMessage(result);
                     this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
                 },
@@ -121,8 +115,6 @@ export class GameControl implements IGameControl {
             this.movement();
         });
     }
-    
-
 
     public startGame(): void {
         this.discoveredPitRooms.clear();
@@ -131,15 +123,17 @@ export class GameControl implements IGameControl {
 
         this.player.incrementResource(PlayerResourceType.ARROWS, 3);
         const total = this.cave.getRoomCount();
+
         const used = new Set<number>();
-        const randNotTunnelRoom = () => {
+        const randNotTunnelRoom = (): number => {
             let rand: number;
-            do { rand = Math.floor(Math.random() * total) + 1; }
-            while (used.has(rand));
+            do {
+                rand = Math.floor(Math.random() * total) + 1;
+            } while (used.has(rand) || this.cave.checkIfTunnel(rand));
             used.add(rand);
-            if (this.cave.checkIfTunnel(rand)) return randNotTunnelRoom();
-            else return rand;
+            return rand;
         };
+
         this.startRoom = randNotTunnelRoom();
         Map.setRoomLocation(MapObjectType.PLAYER, this.startRoom);
         Map.setRoomLocation(MapObjectType.WUMPUS, randNotTunnelRoom());
@@ -150,17 +144,14 @@ export class GameControl implements IGameControl {
         this.running = true;
         void this.update();
     }
+
     public movement(): void {
         document.addEventListener('keydown', (event) => {
             if (!this.running || this.busy) return;
-            console.log(`Key pressed: ${event.key} (Code: ${event.code})`);
 
             const direction = this.getDirectionFromKey(event.key);
             if (!direction) return;
 
-            // Block further input while an async action (move + hazard handling
-            // or a shot) is resolving so trivia/high-score screens aren't
-            // interrupted by stray key presses.
             this.busy = true;
             const action = this.gameMode === GameMode.MOVE
                 ? this.movePlayer(direction)
@@ -180,12 +171,14 @@ export class GameControl implements IGameControl {
             default: return null;
         }
     }
+
     private async update(): Promise<void> {
         while (this.running) {
             this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
             await this.pause(2000);
         }
     }
+
     async movePlayer(caveRoomDirection: CaveRoomDirections): Promise<void> {
         const prettyDir = caveRoomDirection.replace(/_/g, ' ');
         if (this.map.movePlayer(caveRoomDirection) == -1) {
@@ -196,9 +189,8 @@ export class GameControl implements IGameControl {
         this.player.incrementResource("turns");
         const room = Map.getRoomLocation(MapObjectType.PLAYER);
         this.announce(`You move ${prettyDir} into room ${room}.`);
-        this.image.movePlayerInDirection(caveRoomDirection);
+        this.image.setPlayerRoom(room, this.cave.getRoomCount());
 
-        // Surface warnings about hazards in adjacent rooms.
         for (const warningMessage of this.map.getWarningsNearPlayer()) {
             this.announce(warningMessage);
         }
@@ -228,11 +220,6 @@ export class GameControl implements IGameControl {
         }
     }
 
-    /**
-     * Checks the player's current room for hazards and drives the matching
-     * graphics: trivia challenges for the pit and Wumpus, and a relocation for
-     * bats. Ends the game (showing high scores) on a fatal encounter.
-     */
     private async handleHazards(): Promise<void> {
         const room = Map.getRoomLocation(MapObjectType.PLAYER);
 
@@ -255,6 +242,8 @@ export class GameControl implements IGameControl {
             if (survived) {
                 this.revealHazard(room, 'pit');
                 this.announce('You catch the ledge and haul yourself back to safety!');
+                Map.setRoomLocation(MapObjectType.PLAYER, this.startRoom);
+                this.image.setPlayerRoom(this.startRoom, this.cave.getRoomCount());
             } else {
                 await this.gameOver(false, 'You fell into the pit. Game over.');
             }
@@ -266,21 +255,14 @@ export class GameControl implements IGameControl {
             this.revealHazard(room, 'bat');
             const dest = this.randomNonTunnelRoom(new Set([room]));
             Map.setRoomLocation(MapObjectType.PLAYER, dest);
-            // Update the visual player sprite to match the new logical room
             try {
                 this.image.setPlayerRoom(dest, this.cave.getRoomCount());
-            } catch (e) {
-                // ignore if image not mounted yet
-            }
+            } catch (e) { /* ignore */ }
             this.announce(`Giant bats snatch you up and drop you in room ${dest}!`);
             await this.handleHazards();
         }
     }
 
-    /**
-     * Ends the game, recording a high score on a win and showing the high
-     * score board.
-     */
     private async gameOver(won: boolean, message: string): Promise<void> {
         this.running = false;
         this.announce(message);
@@ -299,9 +281,8 @@ export class GameControl implements IGameControl {
         }
     }
 
-    private showHighScoresOverlay(highScores: HighScore, playerName?: string, playerScore?: number) {
+    private showHighScoresOverlay(highScores: HighScore, playerName?: string, playerScore?: number): void {
         try {
-            // hide all children of the root except the high-score and terminal containers
             if (this.$root) {
                 this.$root.children().each((_, el) => {
                     const $el = $(el);
@@ -313,24 +294,21 @@ export class GameControl implements IGameControl {
                 });
             }
 
-            // show highscores and ensure restart button is visible
             this.image.setRestartVisible(true);
 
-            // lock scroll and scroll to highscores
-            const $hs = this.$root ? this.$root.find('[data-slot="high-score-ui"]') : $('.ui-shell[data-role="high-score-overlay"]').first();
+            const $hs = this.$root
+                ? this.$root.find('[data-slot="high-score-ui"]')
+                : $('.ui-shell[data-role="high-score-overlay"]').first();
             const top = $hs.length && $hs.offset() ? $hs.offset()!.top : 0;
             window.scrollTo({ top, behavior: 'smooth' });
             document.documentElement.style.overflow = 'hidden';
 
-            // show highscores (no close callback — page will remain focused on highscores
-            // and scroll locked; restart button will refresh the page)
             this.highScores.show(highScores, playerName || '', playerScore);
         } catch (e) {
             this.highScores.show(highScores, playerName || '', playerScore);
         }
     }
 
-    /** Picks a random non-tunnel room, optionally avoiding a set of rooms. */
     private randomNonTunnelRoom(exclude: Set<number> = new Set()): number {
         const total = this.cave.getRoomCount();
         let rand = 1;
@@ -341,7 +319,6 @@ export class GameControl implements IGameControl {
         return rand;
     }
 
-    /** Echoes a message to both the side terminal and the in-game display. */
     private announce(message: string): void {
         this.terminal.println(message);
         this.image.addTerminalMessage(message);
@@ -349,14 +326,27 @@ export class GameControl implements IGameControl {
 
     async purchaseArrow(): Promise<string> {
         const result = await this.runTriviaEvent("ARROWS", 'You bought arrows.', 'Not enough correct answers to buy arrows.');
-        if (result == 'You bought arrows.') {
+        if (result === 'You bought arrows.') {
             this.player.incrementResource(PlayerResourceType.ARROWS);
         }
-
-        return result
+        return result;
     }
 
-    public drawSprite(roomNumber: number, filePath: string) {
+    // Uses ImageScreen's cell positions as the single source of truth
+    private getRoomPixelCenter(roomNumber: number): { x: number; y: number } | null {
+        const positions = this.image.getCellPositions();
+        if (positions.length === 0) return null;
+
+        const totalRooms = this.cave.getRoomCount();
+        const idx = totalRooms === positions.length
+            ? roomNumber - 1
+            : Math.floor((roomNumber - 1) / totalRooms * positions.length);
+
+        const safe = Math.max(0, Math.min(positions.length - 1, idx));
+        return { x: positions[safe].cx, y: positions[safe].cy };
+    }
+
+    public drawSprite(roomNumber: number, filePath: string): void {
         const room = Math.max(1, Math.floor(roomNumber));
         const point = this.getRoomPixelCenter(room);
         if (!point) return;
@@ -376,7 +366,7 @@ export class GameControl implements IGameControl {
 
         const spritePath = hazard === 'pit' ? pitIconUrl : batIconUrl;
         const key = `${hazard}-${roomNum}`;
-        const size = 42;
+        const size = 84;
         this.placeHazardMarker(key, spritePath, point.x - size / 2, point.y - size / 2, size);
     }
 
@@ -384,8 +374,9 @@ export class GameControl implements IGameControl {
         const $game = $('#game-container');
         if (!$game.length) return;
 
-        // Prefer to place markers inside the image area so coordinates align
-        const $imageArea = this.$root ? this.$root.find('[data-slot="image-area"]').first() : $game.find('[data-slot="image-area"]').first();
+        const $imageArea = this.$root
+            ? this.$root.find('[data-slot="image-area"]').first()
+            : $game.find('[data-slot="image-area"]').first();
 
         if ($game.find(`[data-hazard-key="${key}"]`).length > 0) return;
 
@@ -405,34 +396,11 @@ export class GameControl implements IGameControl {
             .attr('data-hazard-marker', 'true')
             .attr('data-hazard-key', key);
 
-        if ($imageArea && $imageArea.length) {
+        if ($imageArea?.length) {
             $imageArea.append($marker);
         } else {
             $game.append($marker);
         }
-    }
-
-    private getRoomPixelCenter(roomNumber: number): { x: number; y: number } | null {
-        const totalRooms = this.cave.getRoomCount();
-        if (totalRooms <= 0) return null;
-
-        const positions: { x: number; y: number }[] = [];
-        let posX = 190;
-        for (let col = 0; col < 6; col++) {
-            let posY = col % 2 === 0 ? 50 : 4;
-            for (let row = 0; row < 5; row++) {
-                positions.push({ x: posX + 131 / 2, y: posY + 110 / 2 });
-                posY += 91;
-            }
-            posX += 80;
-        }
-
-        if (positions.length === 0) return null;
-        const rawIdx = positions.length === totalRooms
-            ? roomNumber - 1
-            : Math.floor((roomNumber - 1) / totalRooms * positions.length);
-        const idx = Math.max(0, Math.min(positions.length - 1, rawIdx));
-        return positions[idx];
     }
 
     async purchaseSecret(): Promise<string> {
@@ -444,12 +412,11 @@ export class GameControl implements IGameControl {
     }
 
     async saveFromPit(): Promise<string> {
-        this.terminal.println("You escaped the pit!");
         return this.runTriviaEvent("PIT", 'You escaped the pit!', 'You fell into the pit and died');
     }
 
     async escapeWumpus(): Promise<string> {
-        return this.runTriviaEvent("WUMPUS", 'You escaped the Wumpus!','You died by wumpus');
+        return this.runTriviaEvent("WUMPUS", 'You escaped the Wumpus!', 'You died by wumpus');
     }
 
     async addHighScore(): Promise<void> {
@@ -464,12 +431,17 @@ export class GameControl implements IGameControl {
             await this.viewHighScores();
         }
     }
+
     async viewHighScores(): Promise<string> {
         this.highScores.show(this.highScoreData);
         return Promise.resolve("HighScores");
     }
 
-    private async runTriviaEvent(eventType: EventType, successMessage: string | (() => string) | null | CaveRoomDirections, failureMessage: string | (() => string)): Promise<string> {
+    private async runTriviaEvent(
+        eventType: EventType,
+        successMessage: string | (() => string) | null | CaveRoomDirections,
+        failureMessage: string | (() => string)
+    ): Promise<string> {
         if (this.player.getGold() <= 0) {
             if (this.running) {
                 await this.gameOver(false, 'You tried to spend coins with 0 gold. Game over.');
@@ -480,6 +452,8 @@ export class GameControl implements IGameControl {
         this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
         if (await this.checkBankruptcy()) return 'BANKRUPT';
         if (successMessage === null) {
+            this.player.incrementResource("coins");
+            this.image.updateCounts(this.player.getArrowsLeft(), this.player.getGold());
             return 'NULL ERROR';
         }
         const passed = await this.trivia.showQuestions(eventType);
@@ -489,10 +463,6 @@ export class GameControl implements IGameControl {
         return output;
     }
 
-    /**
-     * Ends the game if the player's coin balance has dropped below zero.
-     * Returns true when the game was ended so callers can stop processing.
-     */
     private async checkBankruptcy(): Promise<boolean> {
         if (this.running && this.player.getGold() < 0) {
             await this.gameOver(false, 'You ran out of coins. Game over.');
@@ -500,5 +470,4 @@ export class GameControl implements IGameControl {
         }
         return false;
     }
-
 }

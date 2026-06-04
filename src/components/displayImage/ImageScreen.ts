@@ -1,7 +1,6 @@
 import uiTemplate from './ImageScreen.html?raw';
 import $ from 'jquery';
 import { displaySprite } from './displaySprite';
-//import { RoomNum, type MapObjectType } from "./IMap";
 import attackingButtonUrl from '../../images/attackingButton.png';
 import movingButtonUrl from '../../images/movingButton.png';
 import arrowIconUrl from '../../images/arrowIcon.png';
@@ -19,7 +18,6 @@ export class ImageScreen {
     private $coinsCountEl?: JQuery;
     private playerPos = { x: 230, y: 180, size: 60 };
     private cellPositions: { cx: number; cy: number }[] = [];
-    // Index into cellPositions of the cell the player sprite currently sits on.
     private currentCellIdx = -1;
     private playerRoom = 0;
     private roomCount = 0;
@@ -32,7 +30,7 @@ export class ImageScreen {
     private onRestartButtonClick?: () => void;
     private terminalMessages: string[] = [];
 
-    public updateCounts(count: number, coinCount: number) {
+    public updateCounts(count: number, coinCount: number): void {
         this.arrowCount = count;
         this.coinCount = coinCount;
         this.refreshUI();
@@ -66,9 +64,9 @@ export class ImageScreen {
     }
 
     public init($container: JQuery): void {
-        this.$container = $container;         
-        this.$container.hide();               
-        this.$container.html(uiTemplate);     
+        this.$container = $container;
+        this.$container.hide();
+        this.$container.html(uiTemplate);
         this.$imageArea = this.$container.find('[data-slot="image-area"]');
     }
 
@@ -77,84 +75,71 @@ export class ImageScreen {
         if (this.$coinsCountEl) this.$coinsCountEl.text(this.coinCount);
     }
 
+    public getCellPositions(): { cx: number; cy: number }[] {
+        return this.cellPositions;
+    }
+
     public displayImage(imagePath: string): void {
-        
-        this.$imageArea.empty(); 
+        this.$imageArea.empty();
         this.cellPositions = [];
         this.$imageArea.css({
             'position': 'relative',
             'width': '900px',
             'height': '540px'
         });
-        let posY=40;
-        let posX=190;
-        let amountHex=5;
-        for(let j=0;j<6; j++){
-            if(j%2==0){
-                posY=50;
-       
-                for(let i=0;i<amountHex; i++){
-                    const $imgElement = $('<img>', {
-                        src: imagePath,                  
-                        alt: 'Regular Hexagon Shape',    
-                        css: {
-                            'position': 'absolute',
-                            'width': '131px',            
-                            'height': '110px',
-                            'left': posX+'px',   
-                            'top': posY+'px'  
-                        }
-                    });
-                    this.cellPositions.push({ cx: posX + 131 / 2, cy: posY + 110 / 2 });
-                    posY+=91;
-                    this.$imageArea.append($imgElement);
-                    this.$imageArea.append($imgElement);
-                }
-                //amountHex+=1;
-                
-            } else{
-                posY=4;
-                for(let i=0;i<5; i++){
-                        const $imgElement = $('<img>', {
-                            src: imagePath,                  
-                            alt: 'Regular Hexagon Shape',    
-                            css: {
-                                'position': 'absolute',
-                                'width': '131px',            
-                                'height': '110px',
-                                'left': posX+'px',   
-                                'top': posY+'px'  
-                            }
-                        });
-                        this.cellPositions.push({ cx: posX + 131 / 2, cy: posY + 110 / 2 });
-                        posY+=91;
-                        this.$imageArea.append($imgElement);
-                        this.$imageArea.append($imgElement);
-                    }
-                //amountHex+=1;
-                
-            }
-            posX+=80;
+
+        // Build column descriptors: 6 columns, 80px apart, alternating y-start
+        const columns: { posX: number; startY: number }[] = [];
+        let posX = 190;
+        for (let j = 0; j < 6; j++) {
+            columns.push({ posX, startY: j % 2 === 0 ? 50 : 4 });
+            posX += 80;
         }
-        
+
+        // Place hexagons column-major (col0 rows 0-4, col1 rows 0-4, ...)
+        // This gives 30 cells matching cave rooms 1-30 in the same order
+        for (const col of columns) {
+            let posY = col.startY;
+            for (let row = 0; row < 5; row++) {
+                const $imgElement = $('<img>', {
+                    src: imagePath,
+                    alt: 'Regular Hexagon Shape',
+                    css: {
+                        'position': 'absolute',
+                        'width': '131px',
+                        'height': '110px',
+                        'left': col.posX + 'px',
+                        'top': posY + 'px'
+                    }
+                });
+                // Record the pixel centre of this hex
+                this.cellPositions.push({
+                    cx: col.posX + 131 / 2,
+                    cy: posY + 110 / 2
+                });
+                posY += 91;
+                this.$imageArea.append($imgElement); // ✅ only once
+            }
+        }
+
         const $arrows1 = $('<div>', { text: this.arrowCount }).css({
-            'position': 'absolute', 
-            'left': '125px', 
-            'top': '110px', 
+            'position': 'absolute',
+            'left': '125px',
+            'top': '110px',
             'color': 'white',
             'z-index': '20',
-            'font-size': '36px',       
-            'font-weight': 'bold'    
+            'font-size': '36px',
+            'font-weight': 'bold'
         });
-        
-        const $coins1= $('<div>', { text: this.coinCount }).css({
-            'position': 'absolute', 
-            'left': '835px', 
-            'top': '110px', 
+
+        const $coins1 = $('<div>', { text: this.coinCount }).css({
+            'position': 'absolute',
+            'left': '835px',
+            'top': '110px',
             'color': 'white',
             'z-index': '20',
-            'font-size': '36px',       
-            'font-weight': 'bold'    
+            'font-size': '36px',
+            'font-weight': 'bold'
         });
 
         const $attackButton = $('<img>', {
@@ -167,8 +152,7 @@ export class ImageScreen {
                 'left': '15px',
                 'top': '320px',
                 'cursor': 'pointer',
-                'border': this.currentMode === GameMode.ATTACK ? '3px solid yellow' : 'none',
-                
+                'border': this.currentMode === GameMode.ATTACK ? '3px solid yellow' : 'none'
             }
         }).on('click', () => {
             this.refreshUI();
@@ -207,13 +191,9 @@ export class ImageScreen {
                 'cursor': 'pointer'
             }
         }).on('click', () => {
-            console.log('[DEBUG] Buy Arrows button click detected');
-            if (this.onArrowButtonClick) {
-                this.onArrowButtonClick();
-            } else {
-                console.log('[DEBUG] Arrow callback is not set');
-            }
+            if (this.onArrowButtonClick) this.onArrowButtonClick();
         });
+
         const $secretButton = $('<img>', {
             src: secretButtonUrl,
             alt: 'Buy Secret',
@@ -227,12 +207,7 @@ export class ImageScreen {
                 'z-index': '2000'
             }
         }).on('click', () => {
-            console.log('[DEBUG] Buy Secret button click detected');
-            if (this.onSecretButtonClick) {
-                this.onSecretButtonClick();
-            } else {
-                console.log('[DEBUG] Secret callback is not set');
-            }
+            if (this.onSecretButtonClick) this.onSecretButtonClick();
         });
 
         const $restartButton = $('<button>', {
@@ -272,34 +247,28 @@ export class ImageScreen {
         this.$imageArea.append($restartButton);
         this.$imageArea.append($coinButton);
 
-        // Keep references so live updates (counts, terminal) can target these
-        // elements without redrawing the whole board.
         this.$arrowsCountEl = $arrows1;
         this.$coinsCountEl = $coins1;
         this.$restartButtonEl = $restartButton;
 
-        // Place the player sprite on its current hex cell and draw it last so it
-        // sits on top of the grid and is re-added on every board redraw.
         this.positionPlayerOnCell();
         this.drawPlayerSprite();
 
-        this.$container.show();//this is 
+        this.$container.show();
     }
 
-    /**
-     * Maps the player's current room number onto its hex cell. With a 30-room
-     * cave and a 30-cell grid the mapping is 1:1 (room N -> cell N-1). If the
-     * counts ever differ, rooms are spread proportionally across the cells.
-     */
     private positionPlayerOnCell(): void {
         const cells = this.cellPositions.length;
         if (cells === 0 || this.roomCount <= 0 || this.playerRoom <= 0) return;
+
         const idx = this.roomCount === cells
             ? this.playerRoom - 1
             : Math.floor((this.playerRoom - 1) / this.roomCount * cells);
         const safeIdx = Math.max(0, Math.min(cells - 1, idx));
         const cell = this.cellPositions[safeIdx];
         this.currentCellIdx = safeIdx;
+
+        // cx/cy is the hex centre; subtract half sprite size to get top-left corner
         this.playerPos = {
             x: cell.cx - this.playerPos.size / 2,
             y: cell.cy - this.playerPos.size / 2,
@@ -307,11 +276,6 @@ export class ImageScreen {
         };
     }
 
-    /**
-     * Pixel offsets (in image-area coordinates) that correspond to a single
-     * step in each direction across the flat-top hex grid. Columns are 80px
-     * apart and rows 91px apart, with diagonal neighbours half a row up/down.
-     */
     private static readonly directionOffsets: Record<string, { dx: number; dy: number }> = {
         north: { dx: 0, dy: -91 },
         south: { dx: 0, dy: 91 },
@@ -321,11 +285,6 @@ export class ImageScreen {
         south_west: { dx: -80, dy: 45.5 },
     };
 
-    /**
-     * Moves the player sprite to the neighbouring hex cell that lies in the
-     * given direction, so the on-screen movement always matches the announced
-     * direction. Falls back to room-based placement if no current cell is known.
-     */
     public movePlayerInDirection(direction: string): void {
         if (this.currentCellIdx < 0 || this.cellPositions.length === 0) return;
         const offset = ImageScreen.directionOffsets[direction];
@@ -335,8 +294,6 @@ export class ImageScreen {
         const targetX = current.cx + offset.dx;
         const targetY = current.cy + offset.dy;
 
-        // Pick the cell whose centre is closest to the target point, ignoring
-        // the cell we're already on.
         let bestIdx = this.currentCellIdx;
         let bestDist = Infinity;
         for (let i = 0; i < this.cellPositions.length; i++) {
@@ -359,20 +316,18 @@ export class ImageScreen {
         this.drawPlayerSprite();
     }
 
-    /** Removes any existing player sprite, then draws it at playerPos. */
     private drawPlayerSprite(): void {
         this.$imageArea.find('img[alt="Game Entity Sprite"]').remove();
         displaySprite(this.$imageArea, playerUrl, this.playerPos.x, this.playerPos.y, this.playerPos.size);
     }
 
-    /** Move the player sprite to the hex cell matching the given room. */
     public setPlayerRoom(room: number, roomCount: number): void {
         this.playerRoom = room;
         this.roomCount = roomCount;
         this.positionPlayerOnCell();
         if (this.cellPositions.length) this.drawPlayerSprite();
     }
-    
+
     public displayPlayer(x: number, y: number, size: number = 80): void {
         this.playerPos = { x, y, size };
         this.drawPlayerSprite();
@@ -382,53 +337,17 @@ export class ImageScreen {
         if (!this.$restartButtonEl) return;
         if (visible) {
             try {
-                const $body = $('body');
-                $body.append(this.$restartButtonEl!);
-            } catch (e) {
-                // ignore if DOM not available
-            }
-            // position below the terminal if present
+                $('body').append(this.$restartButtonEl);
+            } catch (e) { /* ignore */ }
             try {
                 const $term = $('[data-slot="terminal-ui"]').first();
                 if ($term.length && $term.offset()) {
                     const off = $term.offset()!;
-                    const terminalTop = off.top + $term.outerHeight()! + 80;
-                    const left = off.left! + ($term.outerWidth()! / 2);
-                    const buttonHeight = 36;
-                    const winH = (window && window.innerHeight) ? window.innerHeight : ($(window).height() || 0);
-                    const fallbackTop = winH - 60 - buttonHeight;
-
-                    // Choose the lower (visually lower on screen) of the two placements
-                    if (terminalTop > fallbackTop) {
-                        this.$restartButtonEl.css({
-                            position: 'fixed',
-                            top: `${terminalTop}px`,
-                            left: `${left}px`,
-                            transform: 'translateX(-50%)',
-                            width: '90px',
-                            height: `${buttonHeight}px`,
-                            cursor: 'pointer',
-                            'z-index': '10000',
-                            display: 'block'
-                        });
-                    } else {
-                        this.$restartButtonEl.css({
-                            position: 'fixed',
-                            bottom: '60px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '90px',
-                            height: `${buttonHeight}px`,
-                            cursor: 'pointer',
-                            'z-index': '10000',
-                            display: 'block'
-                        });
-                    }
-                } else {
+                    const left = off.left + ($term.outerWidth()! / 2);
                     this.$restartButtonEl.css({
                         position: 'fixed',
-                        bottom: '60px',
-                        left: '50%',
+                        top: '585px',
+                        left: `${left}px`,
                         transform: 'translateX(-50%)',
                         width: '90px',
                         height: '36px',
@@ -441,9 +360,7 @@ export class ImageScreen {
                 this.$restartButtonEl.css({ display: 'block' });
             }
         } else {
-            if (this.$imageArea && this.$imageArea.length) {
-                this.$imageArea.append(this.$restartButtonEl);
-            }
+            if (this.$imageArea?.length) this.$imageArea.append(this.$restartButtonEl);
             this.$restartButtonEl.css('display', 'none');
         }
     }
