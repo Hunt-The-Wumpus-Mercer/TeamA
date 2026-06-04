@@ -14,10 +14,10 @@ export default class SoundManager implements ISoundManager {
     
     playSound(soundEventType: SoundEventType): void {
 
-        let path = ""
+        let path = "";
         switch (soundEventType) {
             case SoundEventType.WALK: {
-                path = walkSound
+                path = walkSound;
                 break;
             }
 
@@ -45,7 +45,7 @@ export default class SoundManager implements ISoundManager {
                 path = pitSound;
                 break;
             }
-            case SoundEventType.WARNING_BAT: {
+            case SoundEventType.WARNING_WUMPUS: {
                 path = growlSound;
                 break;
             }
